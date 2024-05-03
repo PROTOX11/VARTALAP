@@ -1,0 +1,21 @@
+
+.likecom {
+    position: absolute;
+    display: flex;
+}
+.comment, .like, .share {
+    width: 1%;
+    height: auto;
+    padding-left: 150px;
+    padding-top: 910px;
+}
+
+.post-box {
+    margin-top: 70px;
+    justify-content: start;
+    align-items: start;
+    margin-left: 500px;
+}
+.post-image {
+    max-width: 100%;
+}

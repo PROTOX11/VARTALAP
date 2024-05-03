@@ -1,0 +1,12 @@
+.chat_box {
+    width: 400px;
+    height: 1200px;
+    padding-left: 500px;
+    
+}
+
+.chat_down {
+    padding-bottom: 800px;
+    position: relative;
+    align-items: end;
+}

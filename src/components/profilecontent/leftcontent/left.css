@@ -1,0 +1,38 @@
+.profilepic {
+    border-radius: 100%;
+    width: 15%;
+}
+
+.profile-picture {
+    display: flex;
+    justify-content: start;
+    align-items:start;
+    padding-top: 60px;
+}
+
+.usernamepr {
+    font-size: 60px;
+    color: grey;
+    position: absolute;
+    padding-left: 300px;
+    position: fixed;
+}
+.button {
+    display: grid;
+    padding-left: 160px;
+    padding-top: 80px;
+}
+.add, .block, .message {
+    margin-top: 15px;
+    width: 200px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 15px;
+}
+
+.home-button {
+    width: 50px;
+    position: fixed;
+    padding-left: 10px;
+    padding-top: 100px;
+}

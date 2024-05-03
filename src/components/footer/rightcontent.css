@@ -1,0 +1,22 @@
+.profilelogo {
+    position: fixed;
+    top: 10px;
+    right: 30px;
+    border-radius: 100%;
+    justify-items: end;
+    width: 120px;
+    height: auto;
+}
+.activeusers {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+.activeuser {
+    position: relative;
+    border-radius: 100%;
+    width: 60px;
+    display: grid;
+    margin-bottom: 25px;
+}

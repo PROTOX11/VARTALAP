@@ -1,0 +1,31 @@
+.menu {
+    position: fixed;
+    display: grid;
+    height: 400px;
+    font-size: 40px;
+    justify-items: start;
+    align-content: space-around;
+    top: 160px;
+    
+}
+.searchbar {
+    position: fixed;
+    top: 20px;
+    width: 280px;
+    height: 40px;
+    border-radius: 20px;
+    text-align: center;
+    background-color: transparent;
+    font-size: 25px;
+}
+
+h1 {
+    position: fixed;
+    top: 5px;
+}
+.logo {
+    position: fixed;
+}
+/* .but, .but:link, .but:visited {
+    text-decoration: none;
+} */

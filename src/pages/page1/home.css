@@ -1,0 +1,56 @@
+.logdet {
+    padding-top: 200px;
+    font-size: 45px;
+    padding-left: 600px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#input {
+    padding-left: 700px;
+}
+
+.usernames {
+    top: 60px;
+    position: relative;
+    width: 600px;
+    height: 60px;
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+}
+.password {
+    top: 100px;
+    position: relative;
+    width: 600px;
+    height: 60px;
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+}
+
+.logpos {
+    padding-left: 1360px;
+    padding-top: 30px;
+}
+
+h1 {
+    color: rgb(137, 56, 249);
+    font-size: 200px;
+}
+
+.logpos img {
+    width: 80px;
+    height: auto;
+}
+.register-box {
+    margin-left: 900px;
+    padding-left: 35px;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-radius: 20px;
+    width: 180px;
+    height: 40px;
+    background-color: rgb(175, 92, 242);
+}
