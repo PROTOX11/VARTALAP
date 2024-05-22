@@ -22,17 +22,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 const userschema = new mongoose.Schema({
-    username: String,
+    username: String,   
     mobile_number: Number,
     password: String,
 });
 
 const User = mongoose.model("User", userschema);
 
-
-// user authenication for login 
-
-// app.post("/api/v1/user/login", async (req))
 
 
 //create User
@@ -56,51 +52,67 @@ app.post("/api/v1/user/new", async (req, res) => {
 });
 
 // read for login User
+
 app.get("/api/v1/user",async(req,res)=> {
     const users = await User.find();
 
     res.status(200).json({success:true,
-    users})
-
-})
-
-// put user create account
-
-app.put("/api/v1/user/:id",async(req,res)=> {
-
-    let user = await User.findById(req.params.id)
-
-    user = await User.findByIdAndUpdate(req.params.id,req.body,{new:true,
-        useFindandModify:false,
-        runValidators:true
+        users})
+        
     })
-    res.status(200).json({
-        success:true,
-        user
-    })
+    
+    
+    const cors = require('cors');
+    app.use(cors());
 
-})
+
+
+
+
+
+
+
+/////// enaabling bottom code in future for more features//
+
+
+
+
+
+// update user create account
+
+// app.put("/api/v1/user/:id",async(req,res)=> {
+
+//     let user = await User.findById(req.params.id)
+
+//     user = await User.findByIdAndUpdate(req.params.id,req.body,{new:true,
+//         useFindandModify:false,
+//         runValidators:true
+//     })
+//     res.status(200).json({
+//         success:true,
+//         user
+//     })
+
+// })
 
 //delete user
 
-app.delete("/api/v1/user/:id",async(req,res)=> {
+// app.delete("/api/v1/user/:id",async(req,res)=> {
 
-    const user = await User.findById(req.params.id);
+//     const user = await User.findById(req.params.id);
 
-    if(!user){
-        return res.status(500).json({
-            success:false,
-            message:"user is not found"
-        });
-    }
-    await user.deleteOne();
+//     if(!user){
+//         return res.status(500).json({
+//             success:false,
+//             message:"user is not found"
+//         });
+//     }
+//     await user.deleteOne();
 
-    res.status(200).json({
-        success:true,
-        message:"user is deleted successfully"
-    })
-})
+//     res.status(200).json({
+//         success:true,
+//         message:"user is deleted successfully"
+//     })
+// })
 
 
-const cors = require('cors');
-app.use(cors());
