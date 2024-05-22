@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-
+const bcrypt = require("bcrypt");
 const app = express();
 
 mongoose.connect("mongodb://localhost:27017/Sample", {
@@ -21,13 +21,26 @@ mongoose.connect("mongodb://localhost:27017/Sample", {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
-const userschema = new mongoose.Schema({
-    username: String,   
-    mobile_number: Number,
-    password: String,
+////  for making functionality to perform operation to save
+
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    mobile_number: { type: Number, required: true },
+    password: { type: String, required: true }
 });
 
-const User = mongoose.model("User", userschema);
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+});
+
+userSchema.methods.comparePassword = function (candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
+};
+
+const User = mongoose.model("User", userSchema);
 
 
 
