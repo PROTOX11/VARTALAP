@@ -1,7 +1,15 @@
 import React from "react";
 import "./leftcontent.css";
-import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 function Leftcontent() {
+    const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear JWT from local storage
+    localStorage.removeItem('token');
+    // Redirect to login page
+    navigate('/');
+  };
     return (
         <div className="left-content-logged">
             
@@ -16,9 +24,7 @@ function Leftcontent() {
             <div className="but">Wow</div>
             <div className="but">Notification</div>
             <div className="but">Create</div>
-            <Link to="/">
-                <div className="but">Logout</div>    
-            </Link>
+            <button className="logout_but" onClick={handleLogout}> Logout</button>
         </nav>
         </div>
     )

@@ -17,6 +17,30 @@ app.use("/api/v1/user", userRoutes)
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
+
+app.use(
+    session({
+      key: "user_sid",
+      secret: "aamkaachar",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        expires: 600000,
+      },
+    })
+  );
+
+app.get('/logout', (req, res) => {
+  if (req.session.user) {
+    req.session.destroy();
+    res.clearCookie('user_sid');
+    res.redirect('/');
+  } else {
+    res.redirect('/Logged');
+  }
+});
+
+
 const DB_URI = "mongodb://localhost:27017/Sample";
 
 mongoose.connect(DB_URI, {
@@ -32,6 +56,14 @@ mongoose.connect(DB_URI, {
 .catch((err) => {
     console.error("MongoDB connection error:", err);
 });
+
+
+
+
+///  from here for more advanced features
+
+
+
 
 
 

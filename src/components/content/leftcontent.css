@@ -26,6 +26,11 @@ h1 {
 .logo {
     position: fixed;
 }
-/* .but, .but:link, .but:visited {
+.but {
     text-decoration: none;
-} */
+}
+
+.logout_but {
+    padding-top: 30px;
+    font-size: 40px;
+}
