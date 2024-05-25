@@ -8,8 +8,13 @@ var session = require("express-session");
 const cors = require('cors');
 const app = express();
 
-
 const PORT = 4500;
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cors());
+
+app.use("/api/v1/user", userRoutes)
+app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 const DB_URI = "mongodb://localhost:27017/Sample";
@@ -27,15 +32,6 @@ mongoose.connect(DB_URI, {
 .catch((err) => {
     console.error("MongoDB connection error:", err);
 });
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(cors());
-
-app.use("/api/v1/user", userRoutes)
-
-
-
 
 
 

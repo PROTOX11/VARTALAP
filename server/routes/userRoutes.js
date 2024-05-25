@@ -3,9 +3,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/authMiddleware');
-
 const router = express.Router();
-const SECRET_KEY = 'your_jwt_secret_key';
+const SECRET_KEY = 'aamkaachar';
 
 // User registration
 router.post("/new", async (req, res) => {
@@ -40,14 +39,14 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Protected route example
-router.get("/profile", authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.userId);
-        res.status(200).json({ success: true, user });
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
-});
+// // Protected route example
+// router.get("/profile", authMiddleware, async (req, res) => {
+//     try {
+//         const user = await User.findById(req.userId);
+//         res.status(200).json({ success: true, user });
+//     } catch (error) {
+//         res.status(500).json({ success: false, error: 'Server error' });
+//     }
+// });
 
 module.exports = router;

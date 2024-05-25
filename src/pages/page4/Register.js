@@ -42,7 +42,7 @@ function UserRegistrationForm() {
         <input type='text' name="mobile_number" className="emails" value={formData.mobile_number} placeholder="Mobile Number or Email" onChange={handleChange}></input>
         <input type='password' name="password" className="password" value={formData.password} placeholder="Password" onChange={handleChange}></input>
       </div>
-      <div className="logpos">
+      <div className="logpos1">
         <button type="submit" className="logged">
           <p>{text}</p>
         </button>

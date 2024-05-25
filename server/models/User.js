@@ -1,9 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-
-////  for making functionality to perform operation to save
-
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     mobile_number: { type: Number, required: true },

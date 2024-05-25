@@ -30,20 +30,34 @@
     font-size: 20px;
 }
 
-.logpos {
-    padding-left: 1360px;
-    padding-top: 30px;
-}
-
 h1 {
     color: rgb(137, 56, 249);
     font-size: 200px;
 }
 
-.logpos img {
+.logposL {
+    padding-left: 700px;
+    padding-top: 60px;
+  }
+  
+  button {
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  
+  .logposL img {
     width: 80px;
     height: auto;
-}
+    box-shadow: none;
+    border: none;
+    outline: none;
+    display: block;
+  }
+  
 .register-box {
     margin-left: 900px;
     padding-left: 35px;
