@@ -1,22 +1,124 @@
-.profilelogo {
-    position: fixed;
-    top: 10px;
-    right: 30px;
-    border-radius: 100%;
-    justify-items: end;
-    width: 120px;
-    height: auto;
+/* Global Styles */
+body {
+    background-color: #f5f5f5; /* Light background for contrast */
+    font-family: Arial, sans-serif;
 }
-.activeusers {
+
+/* Search Bar */
+.search-bar {
+    height: 40px;
+    width: 700px;
+    border-radius: 20px;
+    text-align: center;
+    background-color: #f0e6fa; /* Light violet background */
+    font-size: 18px;
+    border: 1px solid #ccc;
+    padding: 0 20px;
+    margin-top: 20px;
+    margin-left: 50%;
+    transform: translateX(-50%);
     position: fixed;
-    top: 50%;
+}
+
+/* Post Box */
+.post-box {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 100px auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 700px;
+}
+
+/* User Info */
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.profile-picture {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.user-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.user-address {
+    color: #777;
+    font-size: 0.9em;
+}
+
+/* Interaction Buttons */
+.interaction-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.icon.like {
+    filter: hue-rotate(90deg); /* Green tint for the like button */
+}
+
+.icon.comment {
+    filter: hue-rotate(200deg); /* Blue tint for the comment button */
+}
+
+.icon.share {
+    filter: hue-rotate(50deg); /* Yellow tint for the share button */
+}
+
+.post-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.comment-field {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Rightmat */
+.profile-logo {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    border-radius: 50%;
+    width: 140px;
+    height: auto;
+    box-shadow: 0 0 20px 5px rgba(133, 5, 225, 0.5);
+    /* border: 3px solid #8400ff; 
+    background-color: #f0e6fa;  */
+}
+
+.active-users {
+    display: grid;
+    gap: 35px;
+    position: fixed;
+    top: 60%;
     right: 20px;
     transform: translateY(-50%);
 }
-.activeuser {
-    position: relative;
-    border-radius: 100%;
+
+.active-user {
+    border-radius: 50%;
     width: 60px;
-    display: grid;
-    margin-bottom: 25px;
+    box-shadow: 0 0 20px 5px rgba(0, 177, 15, 0.5); /* Violet fade effect */
 }

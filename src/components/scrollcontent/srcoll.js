@@ -11,7 +11,8 @@ import postimg from "../../assets/post/user4/user4post2.png"
 
 function scroll() {
     return (
-        <>     
+        <>
+           <input className="searchbar" placeholder="Search"></input>  
         <div class="post-box">
         <div class="user-info">
             <img src={profile} alt="Profile Picture"></img>

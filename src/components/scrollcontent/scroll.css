@@ -14,8 +14,21 @@
     margin-top: 70px;
     justify-content: start;
     align-items: start;
-    margin-left: 500px;
+    margin-left: 350px;
 }
 .post-image {
     max-width: 100%;
+}
+.searchbar {
+    height: 40px;
+    width: 700px;
+    border-radius: 20px;
+    text-align: center;
+    background-color: #fff;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    padding: 0 4px;
+    margin-top: -50px;
+    position: fixed;
+    margin-left: 320px;
 }

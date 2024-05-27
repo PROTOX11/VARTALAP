@@ -26,7 +26,7 @@ function Home() {
 
   return (
     <div>
-      <h1 className="headline">VARTALAP</h1>
+      <h3 className="headline">VARTALAP</h3>
       <div className="logdet">Enter your login details</div>
       <div id="input">
         <form onSubmit={handleLogin}>
@@ -42,9 +42,11 @@ function Home() {
             placeholder="Password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}/>
+            <div className="log_but">
             <button type="submit" className="logposL">
               <img src={arrow} alt="Login_button" />
             </button>
+            </div>
         </form>
       </div>
       <div className="register-box">

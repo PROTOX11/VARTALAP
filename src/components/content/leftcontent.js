@@ -11,12 +11,8 @@ function Leftcontent() {
     navigate('/');
   };
     return (
-        <div className="left-content-logged">
-            
-        <div className="logo">
+        <div className="left-content-logged">  
         <h1>VARTALAP</h1>
-        <input className="searchbar" placeholder="Search"></input>
-        </div>
         <nav className="menu">
             <div className="but">Home</div>
             <div className="but">Search</div>

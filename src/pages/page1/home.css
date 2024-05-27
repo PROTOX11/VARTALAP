@@ -1,10 +1,12 @@
 .logdet {
-    padding-top: 200px;
+    padding-top: 170px;
     font-size: 45px;
-    padding-left: 600px;
+    padding-left: 300px;
     font-family: 'Courier New', Courier, monospace;
 }
-
+html {
+    height: 100%;
+}
 #input {
     padding-left: 700px;
 }
@@ -30,9 +32,10 @@
     font-size: 20px;
 }
 
-h1 {
+h3 {
     color: rgb(137, 56, 249);
-    font-size: 200px;
+    font-size: 40px;
+    padding-left: 20px;
 }
 
 .logposL {
@@ -40,7 +43,7 @@ h1 {
     padding-top: 60px;
   }
   
-  button {
+.log_but, button {
     background: none;
     border: none;
     outline: none;

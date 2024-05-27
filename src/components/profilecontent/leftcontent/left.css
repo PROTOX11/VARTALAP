@@ -14,20 +14,20 @@
     font-size: 60px;
     color: grey;
     position: absolute;
-    padding-left: 300px;
+    padding-left: 50px;
     position: fixed;
 }
 .button {
-    display: grid;
-    padding-left: 160px;
+    display: flex;
+    padding-left: 50px;
     padding-top: 80px;
 }
 .add, .block, .message {
     margin-top: 15px;
-    width: 200px;
+    width: 100px;
     height: 40px;
     border-radius: 20px;
-    font-size: 15px;
+    font-size: 20px;
 }
 
 .home-button {
@@ -35,4 +35,30 @@
     position: fixed;
     padding-left: 10px;
     padding-top: 100px;
+}
+
+.container {
+    position: relative;
+    display: inline-block; /* Allows the container to shrink-wrap its content */
+}
+.backprofile-wrapper {
+    position: relative;
+    width: 30%;
+    padding-top: 16.6667%; /* (9/16)*100 to maintain 16:9 aspect ratio */
+    overflow: hidden; /* Ensures content outside the box is not visible */
+}
+
+.backprofile {
+    margin-top: 120px;
+    width: 50%;
+    display: block; /* Makes sure the image behaves like a block element */
+}
+
+.circle_profile {
+    position: absolute;
+    top: 200px;
+    left: 100px;
+    width: 20%;
+    border-radius: 50%;
+    z-index: 1; /* Ensures the circular profile is above the background profile */
 }

@@ -11,26 +11,27 @@ function rightcontent() {
     return (
         <div className="rightmat">
         <div>
-            <img src={squirrel} className="profilelogo"></img>
+            <img src={squirrel} className="profile-logo" alt="Profile Logo" />
         </div>
-        <div className="activeusers">
-        <Link to="/Profile">
-        <img src={activeuser1} className="activeuser"></img>    
-        </Link>
-        <Link to="/Profile">
-        <img src={activeuser2} className="activeuser"></img>    
-        </Link>
-        <Link to="/Profile">
-        <img src={activeuser3} className="activeuser"></img>    
-        </Link>
-        <Link to="/Profile">
-        <img src={activeuser4} className="activeuser"></img>    
-        </Link>
-        <Link to="/Profile">
-        <img src={activeuser5} className="activeuser"></img>    
-        </Link>
+        <div className="active-users">
+            <Link to="/Profile">
+                <img src={activeuser1} className="active-user" alt="Active User 1" />
+            </Link>
+            <Link to="/Profile">
+                <img src={activeuser2} className="active-user" alt="Active User 2" />
+            </Link>
+            <Link to="/Profile">
+                <img src={activeuser3} className="active-user" alt="Active User 3" />
+            </Link>
+            <Link to="/Profile">
+                <img src={activeuser4} className="active-user" alt="Active User 4" />
+            </Link>
+            <Link to="/Profile">
+                <img src={activeuser5} className="active-user" alt="Active User 5" />
+            </Link>
         </div>
-        </div>
+    </div>
+    
     )
 }
 
