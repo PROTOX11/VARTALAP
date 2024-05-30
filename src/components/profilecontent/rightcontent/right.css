@@ -1,48 +1,61 @@
 
-.post {
-    padding-left: 250px;
-    z-index: 2;
-}
-
-.post-box {
-  width: 700px;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: #f0f0f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.user-info img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.user-name {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.user-address {
-  font-size: 14px;
-  color: #666;
-}
-.post-image {
-  width: 100%;
-  height: auto;
+.rightup {
+  margin-top: -700px;
+  margin-left: 710px;
+  width: 800px;
+  height: 100px;
+  border: 2px solid black;
   border-radius: 20px;
+  display: flex;
 }
-.comments, .likes, .shares {
-  width: 6%;
-  height: auto;
-  padding-left: 180px;
-  padding-top: 1060px;
+.friends {
+  font-weight: 600;
+  padding-top: 8px;
+  padding-left: 20px;
+  justify-content: left;
+}
+.mini_icon {
+  display: flex;
+  gap: 10px; /* Space between images */
+  margin-top: 30px;
+  margin-left: -60px; 
+}
+.mini_icon img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover; /* Ensures the image covers the element without stretching */
+  clip-path: circle(40% at 40% 50%);
+  border-radius: 50%;
+
+}
+
+.post_area {
+  margin-left: 350px;
+  display: flex;
+  justify-content: center; /* Center the grid within the post area */
+}
+
+.postingrid {
+  display: grid;
+  width: 50%;
+  grid-template-columns: repeat(3, 1fr); /* 5 columns */
+  grid-template-rows: repeat(3, auto);
+  gap: 20px;
+}
+
+.postingrid img {
+  border-radius: 10px;
+  width: 100%;
+  height: auto; /* Maintain the aspect ratio */
+}
+
+
+.profile_post {
+  margin-left: 730px;
+  margin-top: 20px;
+  font-size: 25px;
+  
+}
+body {
+  overflow-x: hidden;
 }

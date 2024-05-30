@@ -4,39 +4,6 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* Search Bar */
-.search-bar {
-    height: 40px;
-    width: 700px;
-    border-radius: 20px;
-    text-align: center;
-    background-color: #f0e6fa; /* Light violet background */
-    font-size: 18px;
-    border: 1px solid #ccc;
-    padding: 0 20px;
-    margin-top: 20px;
-    margin-left: 50%;
-    transform: translateX(-50%);
-    position: fixed;
-}
-
-/* Post Box */
-.post-box {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 100px auto;
-    padding: 20px;
-    width: 80%;
-    max-width: 700px;
-}
-
-/* User Info */
-.user-info {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
 
 .profile-picture {
     border-radius: 50%;
@@ -45,15 +12,9 @@ body {
     margin-right: 10px;
 }
 
-.user-name {
-    font-weight: bold;
-    color: #333;
-}
 
-.user-address {
-    color: #777;
-    font-size: 0.9em;
-}
+
+
 
 /* Interaction Buttons */
 .interaction-buttons {
@@ -62,38 +23,7 @@ body {
     margin-top: 10px;
 }
 
-.icon {
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-}
 
-.icon.like {
-    filter: hue-rotate(90deg); /* Green tint for the like button */
-}
-
-.icon.comment {
-    filter: hue-rotate(200deg); /* Blue tint for the comment button */
-}
-
-.icon.share {
-    filter: hue-rotate(50deg); /* Yellow tint for the share button */
-}
-
-.post-image {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
-.comment-field {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
 
 /* Rightmat */
 .profile-logo {

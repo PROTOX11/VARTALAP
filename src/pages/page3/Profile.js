@@ -6,9 +6,6 @@ function Profile() {
     <>
     <Leftcont />
     <Rightcont />
-    <Rightcont />
-    <Rightcont />
-    <Rightcont />
     </>
     )
     

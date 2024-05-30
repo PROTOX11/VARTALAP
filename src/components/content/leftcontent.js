@@ -11,7 +11,7 @@ function Leftcontent() {
     navigate('/');
   };
     return (
-        <div className="left-content-logged">  
+        <div className="left-content-log">  
         <h1>VARTALAP</h1>
         <nav className="menu">
             <div className="but">Home</div>

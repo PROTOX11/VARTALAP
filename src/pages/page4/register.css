@@ -1,7 +1,7 @@
-.logdet {
-    padding-top: 200px;
+.logdetr {
+    padding-top: 120px;
     font-size: 45px;
-    padding-left: 500px;
+    padding-left: 300px;
     font-family: 'Courier New', Courier, monospace;
 }
 
@@ -46,15 +46,6 @@
     padding-left: 1250px;
     
 }
-.register-box {
-    margin-left: 900px;
-    padding-left: 35px;
-    padding-top: 10px;
-    border-radius: 20px;
-    width: 180px;
-    height: 40px;
-    background-color: rgb(175, 92, 242);
-}
 
 .but-log {
     padding-top: 10px;
@@ -70,10 +61,11 @@
 }
 
 
-.logged{
+.loog{
     padding-left: 20px;
     width: 250px;
     height: 50px;
     align-items: center;
     border-radius: 20px;
+    outline: auto;
 }

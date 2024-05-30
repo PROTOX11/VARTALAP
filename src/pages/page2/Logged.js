@@ -10,6 +10,8 @@ function Logged() {
         <Rightcontent />
         <Scroll />
         <Scroll />
+        <Scroll />
+        <Scroll />
         </>
     )
 }

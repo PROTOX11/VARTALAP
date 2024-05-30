@@ -26,8 +26,8 @@ function Home() {
 
   return (
     <div>
-      <h3 className="headline">VARTALAP</h3>
-      <div className="logdet">Enter your login details</div>
+      <h1 className="headline">VARTALAP</h1>
+      <div className="logdetr">Enter your login details</div>
       <div id="input">
         <form onSubmit={handleLogin}>
           <input

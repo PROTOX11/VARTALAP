@@ -36,14 +36,14 @@ function UserRegistrationForm() {
   return (
     <form onSubmit={handleSubmit}>
       <h1 className="headline">VARTALAP</h1>
-      <div className="logdet">Enter your Register details</div>
+      <div className="logdetr">Enter your Register details</div>
       <div id="input">
         <input type='text' name="username" className="usernames" value={formData.username} placeholder="Create Username" onChange={handleChange}></input>
         <input type='text' name="mobile_number" className="emails" value={formData.mobile_number} placeholder="Mobile Number or Email" onChange={handleChange}></input>
         <input type='password' name="password" className="password" value={formData.password} placeholder="Password" onChange={handleChange}></input>
       </div>
       <div className="logpos1">
-        <button type="submit" className="logged">
+        <button type="submit" className="loog">
           <p>{text}</p>
         </button>
       </div>

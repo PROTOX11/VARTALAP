@@ -10,7 +10,7 @@ html {
     height: 100%;
 }
 
-.left-content-logged {
+.left-content-log {
     height: 100vh; /* Full viewport height */
     width: 340px; /* Increased width to accommodate the extra width of search bar */
     position: fixed;
@@ -31,7 +31,7 @@ h1 {
 .menu {
     display: grid;
     width: 60%;
-    gap: 20px;
+    gap: 30px;
     margin-left: 20px;
 }
 
@@ -43,7 +43,6 @@ h1 {
     background-color: #f0f0f5;
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
 }
 
 .but:hover {

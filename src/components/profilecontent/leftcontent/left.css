@@ -1,33 +1,98 @@
-.profilepic {
-    border-radius: 100%;
-    width: 15%;
+.righttoback {
+    position: fixed;
+    top: 10px; /* Adjust as needed */
+    left: -220px; /* Adjust as needed */
+    background: none; /* Remove any default button styling */
+    border: none; /* Remove border */
+    z-index: 10; /* Ensure it's above other elements */
+    cursor: pointer;      
+    /* margin-left: -220px; */
 }
+.backimg {
+    width: 8%;
+    transform: scaleX(-1);
+    border: 2px solid black;
+    padding: 10px;
+    border-radius: 100px;
+}
+.backprofile {
+    margin-top: -25%;
+    width: 100px;
+    height: auto; /* Makes sure the image behaves like a block element */
+    clip-path: inset(20% 0% 40% 0%);
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 1) 100%);
+}
+.transparent-image {
+    position: relative;
+    display: inline-block; /* Allows the container to shrink-wrap its content */
+    overflow: hidden; /* Ensures any overflow is hidden */
+  }
+  
+  .transparent-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  
+  .transparent-image::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 30%;
+    width: 70%;
+    height: 50%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%);
+    z-index: 1; /* Ensure the gradient is above the image */
+    pointer-events: none; /* Ensures the overlay doesn't interfere with interactions */
+  }
+  
 
+.overlay-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    pointer-events: none; /* Ensures the content is non-interactive */
+  }
+
+.circle_profile {
+    position: absolute;
+    top: 250px;
+    left: 20px;
+    width: 30%;
+    border-radius: 50%;
+    z-index: 1; /* Ensures theq circular profile is above the background profile */
+}
 .profile-picture {
     display: flex;
     justify-content: start;
     align-items:start;
-    padding-top: 60px;
 }
 
 .usernamepr {
     font-size: 60px;
-    color: grey;
-    position: absolute;
-    padding-left: 50px;
-    position: fixed;
+    color: rgb(145, 81, 158);
+    padding-left: 250px;
+    margin-top: -320px;
 }
 .button {
     display: flex;
-    padding-left: 50px;
-    padding-top: 80px;
+    padding-left: 200px;
+    padding-top: 40px;
+    gap: 60px;
 }
 .add, .block, .message {
-    margin-top: 15px;
-    width: 100px;
+    width: 120px;
     height: 40px;
     border-radius: 20px;
-    font-size: 20px;
+    font-size: 15px;
+    background-color: #e6e6fad8;
 }
 
 .home-button {
@@ -40,25 +105,4 @@
 .container {
     position: relative;
     display: inline-block; /* Allows the container to shrink-wrap its content */
-}
-.backprofile-wrapper {
-    position: relative;
-    width: 30%;
-    padding-top: 16.6667%; /* (9/16)*100 to maintain 16:9 aspect ratio */
-    overflow: hidden; /* Ensures content outside the box is not visible */
-}
-
-.backprofile {
-    margin-top: 120px;
-    width: 50%;
-    display: block; /* Makes sure the image behaves like a block element */
-}
-
-.circle_profile {
-    position: absolute;
-    top: 200px;
-    left: 100px;
-    width: 20%;
-    border-radius: 50%;
-    z-index: 1; /* Ensures the circular profile is above the background profile */
 }
