@@ -7,6 +7,8 @@ var cookieParser = require("cookie-parser");
 var session = require("express-session");
 const cors = require('cors');
 const app = express();
+const {DB_URI, SECRET_KEY} = require('./config');
+
 
 const PORT = 4500;
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,7 +23,7 @@ app.use(cookieParser());
 app.use(
     session({
       key: "user_sid",
-      secret: "aamkaachar",
+      secret: SECRET_KEY,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -41,7 +43,6 @@ app.get('/logout', (req, res) => {
 });
 
 
-const DB_URI = "mongodb://localhost:27017/Sample";
 
 mongoose.connect(DB_URI, {
     useNewUrlParser: true,

@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
-const SECRET_KEY = 'aamkaachar';
+const { SECRET_KEY } = require('../config');
 
 // User registration
 router.post("/new", async (req, res) => {
