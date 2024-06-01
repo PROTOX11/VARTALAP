@@ -5,8 +5,9 @@ import profile from "../../../assets/profile/roushan.jpg"
 import backprofile from "../../../assets/post/user4/user4post2.png"
 import home from "../../../assets/icon/home.png"
 import { Link } from "react-router-dom";
-
+import useUserData from "../../../models/useUserData";
 function Left() {
+    const userData = useUserData();
     return (
     <>
     <Link to="/logged">
@@ -20,7 +21,9 @@ function Left() {
         </div>
         <img src={profile} alt="Circular Profile" class="circle_profile"></img>
     </div>
-    <div className="usernamepr">Roushan kumar</div>
+    {userData && userData.username &&(
+    <div className="usernamepr">{userData.username}</div>
+    )}
         <div className="button">
             <button className="add">Add Friend</button>
             <button className="block">Block</button>

@@ -1,16 +1,19 @@
-// server/middleware/authMiddleware.js
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require('../config');
 
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization;
+
     if (!token) {
-        return res.status(401).json({ success: false, message: 'No token provided' });
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+
+    jwt.verify(token.split(" ")[1], SECRET_KEY, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ success: false, message: 'Invalid token' });
+            console.error('JWT Verification Error:', err);
+            return res.status(401).json({ message: 'Unauthorized: Invalid token' });
         }
+        console.log('Decoded Token:', decoded);
         req.userId = decoded.userId;
         next();
     });

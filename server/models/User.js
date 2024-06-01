@@ -1,6 +1,7 @@
 // server/models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { type } = require('@testing-library/user-event/dist/type');
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },

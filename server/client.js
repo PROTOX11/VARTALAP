@@ -1,7 +1,7 @@
 
-const { Redis } = require('ioredis');
+// const { Redis } = require('ioredis');
 
-const client = new Redis();
+// const client = new Redis();
 
-module.exports = client;
+// module.exports = client;
 

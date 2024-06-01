@@ -1,30 +1,35 @@
-import React from "react";
-import "./scroll.css"   
-import arrow from "../../assets/icon/arrow.png"
-import like from "../../assets/icon/like.png"
-import comment from "../../assets/icon/chat.png"
-import share from "../../assets/icon/share.png"
+import React, { useEffect, useState } from "react";
+import "./scroll.css";
+import arrow from "../../assets/icon/arrow.png";
+import like from "../../assets/icon/like.png";
+import comment from "../../assets/icon/chat.png";
+import share from "../../assets/icon/share.png";
 import { Link } from "react-router-dom";
-import profile from "../../assets/post/user4/user4post2.png"
-import postimg from "../../assets/post/user4/user4post2.png"
+import profile from "../../assets/post/user4/user4post2.png";
+import postimg from "../../assets/post/user4/user4post2.png";
+import axios from "axios";
+import useUserData from "../../models/useUserData";
 
-
-
-function scroll() {
+function useScroll() {
+    const userData = useUserData();
     return (
         <>
            <div>
            <input className="searchbar" placeholder="Search"></input>
            </div>
         <div class="post-box">
-        <div class="user-info">
-            <img src={profile} alt="Profile Picture"></img>
-        <div>
-            <Link to="/Profile">
-                <div class="user-name">Roushan kumar</div>
-            </Link>
-            <div class="user-address">sector-18 chandigarh</div>
-        </div>
+        <div className="user-info">
+            <img src={profile} alt="Profile Picture" />
+            <div>
+                    <div>
+                        {userData && userData.username &&(
+                            <Link to="/Profile" className="user-link">
+                                <div className="user-name">{userData.username}</div>
+                            </Link>
+                        )}
+                    </div>
+                <div className="user-address">sector-18 chandigarh</div>
+            </div>
         </div>
         <div className="post-image">
         <img src={postimg}className="main-post"></img>
@@ -56,6 +61,4 @@ function scroll() {
         </>
     )
 }
-// import { formToJSON } from "axios";
-
-export default scroll;
+export default useScroll;
