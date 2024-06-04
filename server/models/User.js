@@ -6,7 +6,9 @@ const { type } = require('@testing-library/user-event/dist/type');
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     mobile_number: { type: Number, required: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    profile_picture: { type: mongoose.Schema.Types.ObjectId, ref: 'uploads.files' },
+    dob: { type: String, required: true }
 });
 
 userSchema.pre('save', async function (next) {

@@ -9,14 +9,10 @@ import profile from "../../assets/post/user4/user4post2.png";
 import postimg from "../../assets/post/user4/user4post2.png";
 import axios from "axios";
 import useUserData from "../../models/useUserData";
-
 function useScroll() {
     const userData = useUserData();
     return (
         <>
-           <div>
-           <input className="searchbar" placeholder="Search"></input>
-           </div>
         <div class="post-box">
         <div className="user-info">
             <img src={profile} alt="Profile Picture" />

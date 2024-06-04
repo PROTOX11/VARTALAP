@@ -79,7 +79,7 @@
     font-size: 60px;
     color: rgb(145, 81, 158);
     padding-left: 250px;
-    margin-top: -320px;
+    margin-top: -340px;
 }
 .button {
     display: flex;
@@ -88,21 +88,33 @@
     gap: 60px;
 }
 .add, .block, .message {
-    width: 120px;
+    width: 140px;
     height: 40px;
     border-radius: 20px;
     font-size: 15px;
     background-color: #e6e6fad8;
-}
-
-.home-button {
-    width: 50px;
-    position: fixed;
-    padding-left: 10px;
-    padding-top: 100px;
+    margin-left: 40px;
 }
 
 .container {
     position: relative;
     display: inline-block; /* Allows the container to shrink-wrap its content */
+}
+
+p {
+    margin-left: 20px;
+}
+
+.threebutuser {
+    margin-left: 180px;
+    margin-top: 20px;
+}
+.about_line {
+    margin-top: 20px;
+    margin-left: 30px;
+}
+
+.threebutfriend {
+    margin-left: 180px;
+    margin-top: 20px;
 }

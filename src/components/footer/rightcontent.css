@@ -13,19 +13,6 @@ body {
 }
 
 
-
-
-
-/* Interaction Buttons */
-.interaction-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-
-
-/* Rightmat */
 .profile-logo {
     position: fixed;
     top: 20px;
