@@ -10,17 +10,15 @@ function Home() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     console.log('handleLogin invoked');
     try {
       const response = await axios.post('http://localhost:4500/api/v1/user/login', formData);
       const { token } = response.data;
       localStorage.setItem('token', token);
-      // Redirect to profile page upon successful login
-      navigate('/Logged'); // Use navigate directly
+      navigate('/Logged');
     } catch (error) {
       console.error('Login error:', error);
-      // Handle login error (e.g., display error message to user)
     }
   };
 

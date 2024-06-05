@@ -5,10 +5,10 @@ import profile from "../../../assets/profile/roushan.jpg"
 import backprofile from "../../../assets/post/user4/user4post2.png"
 import home from "../../../assets/icon/home.png"
 import { Link } from "react-router-dom";
-import useUserData from "../../../models/useUserData";
+import UseUserData from "../../../models/useUserData";
 import pencil from "../../../assets/icon/pencil.png"
 function Left() {
-    const userData = useUserData();
+    const userData = UseUserData();
     return (
     <>
     <Link to="/logged">
@@ -29,11 +29,6 @@ function Left() {
             <button className="add">Update profile</button>
             <button className="block">Update username</button>
             <button className="message">Update Cover</button>
-            </div>
-            <div className="threebutfriend">
-            <button className="add">Add Friend</button>
-            <button className="block">Block</button>
-            <button className="message">Message</button>
             </div>
         <div className="about_line">
         <span>About</span>

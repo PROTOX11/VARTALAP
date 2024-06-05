@@ -4,11 +4,13 @@ import CustomRouteGuard from './components/guard/Routeguard';
 import AuthGuard from './components/guard/Authguard';
 import Home from "./pages/page1/Home";
 import Logged from "./pages/page2/Logged";
-import Profile from "./pages/page3/Profile";
+import Profile from "./pages/page3/user_Profile";
 import Register from "./pages/page4/Register";
+import MyProfile from "./pages/page6/my_Profiles"; 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import UseUserData from "./models/useUserData";
 const App = () => {
+  const userData = UseUserData();
   return (
     <div className="App">
       <Router>
@@ -16,7 +18,10 @@ const App = () => {
           <Route path="/" element={<AuthGuard><Home /></AuthGuard>} />
           <Route path="/logged" element={<CustomRouteGuard><Logged /></CustomRouteGuard>} />
           <Route path="/register" element={<AuthGuard><Register /></AuthGuard>} />
-          <Route path="/profile" element={<CustomRouteGuard><Profile /></CustomRouteGuard>} />
+          {userData && userData.friends.map((friend, index) => (
+          <Route path="/user_profile/:friendName" element={<CustomRouteGuard><Profile /></CustomRouteGuard>} />
+          ))}
+          <Route path="/myprofile" element={<CustomRouteGuard><MyProfile /></CustomRouteGuard>} />
         </Routes>
       </Router>
     </div>

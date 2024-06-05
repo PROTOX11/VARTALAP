@@ -11,8 +11,8 @@ const { SECRET_KEY } = require('../config');
 // User registration
 router.post("/new", async (req, res) => {
     try {
-        const { username, mobile_number, password } = req.body;
-        const user = new User({ username, mobile_number, password });
+        const { username, mobile_number, password, friends } = req.body;
+        const user = new User({ username, mobile_number, password, friends });
         await user.save();
         res.status(200).json({ success: true, user });
     } catch (error) {
