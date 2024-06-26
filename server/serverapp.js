@@ -8,14 +8,14 @@ var session = require("express-session");
 const cors = require('cors');
 const app = express();
 const {DB_URI, SECRET_KEY} = require('./config');
-
+const updateUsername = require('./routes/userRoutes');
 
 const PORT = 4500;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-
 app.use("/api/v1/user", userRoutes)
+app.use("/api/v1", updateUsername);
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
@@ -70,10 +70,6 @@ mongoose.connect(DB_URI, {
 
 
 /////// enaabling bottom code in future for more features//
-
-
-
-
 
 // update user create account
 

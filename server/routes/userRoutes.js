@@ -69,6 +69,24 @@ router.get('/getUsers', async (req, res) => {
     }
 });
 
+
+router.post('/update-username', async (req, res) => {
+    const { userId, newUsername } = req.body;
+  
+    try {
+      const user = await User.findById(userId);
+      if (user) {
+        user.username = newUsername;
+        await user.save();
+        res.status(200).send('Username updated successfully');
+      } else {
+        res.status(404).send('User not found');
+      }
+    } catch (error) {
+      console.error('Error updating username:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
 // // Protected route example
 // router.get("/profile", authMiddleware, async (req, res) => {
     //     try {
