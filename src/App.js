@@ -9,6 +9,7 @@ import Register from "./pages/page4/Register";
 import MyProfile from "./pages/page6/my_Profiles"; 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UseUserData from "./models/useUserData";
+
 const App = () => {
   const userData = UseUserData();
   return (
@@ -19,7 +20,11 @@ const App = () => {
           <Route path="/logged" element={<CustomRouteGuard><Logged /></CustomRouteGuard>} />
           <Route path="/register" element={<AuthGuard><Register /></AuthGuard>} />
           {userData && userData.friends.map((friend, index) => (
-          <Route path="/user_profile/:friendName" element={<CustomRouteGuard><Profile /></CustomRouteGuard>} />
+            <Route
+              key={index} // Add key prop here
+              path={`/user_profile/${friend.name}`}
+              element={<CustomRouteGuard><Profile /></CustomRouteGuard>}
+            />
           ))}
           <Route path="/myprofile" element={<CustomRouteGuard><MyProfile /></CustomRouteGuard>} />
         </Routes>
