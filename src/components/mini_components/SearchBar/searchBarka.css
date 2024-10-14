@@ -1,0 +1,27 @@
+  .searchbar {
+    height: 50px;
+    width: 800px;
+    border-radius: 20px;
+    text-align: center;
+    background-color: #fff;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    padding: 0 4px;
+    margin-top: -65px;
+    position: fixed;
+    /* display: none; */
+    left: 400px;
+}
+@keyframes slideIn {
+  from {
+      transform: translateX(-60%);
+      opacity: 0;
+  }
+  to {
+      transform: translateX(0);
+      opacity: 1;
+  }
+}
+.search-bar-container {
+  animation: slideIn 0.5s forwards;
+}

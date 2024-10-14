@@ -1,0 +1,120 @@
+.righttoback {
+    position: fixed;
+    top: 10px; /* Adjust as needed */
+    left: -220px; /* Adjust as needed */
+    background: none; /* Remove any default button styling */
+    border: none; /* Remove border */
+    z-index: 10; /* Ensure it's above other elements */
+    cursor: pointer;      
+    /* margin-left: -220px; */
+}
+.backimg {
+    width: 8%;
+    transform: scaleX(-1);
+    border: 2px solid black;
+    padding: 10px;
+    border-radius: 100px;
+}
+.backprofile {
+    margin-top: -25%;
+    width: 100px;
+    height: auto; /* Makes sure the image behaves like a block element */
+    clip-path: inset(20% 0% 40% 0%);
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 1) 100%);
+}
+.transparent-image {
+    position: relative;
+    display: inline-block; /* Allows the container to shrink-wrap its content */
+    overflow: hidden; /* Ensures any overflow is hidden */
+  }
+  
+  .transparent-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  
+  .transparent-image::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 30%;
+    width: 70%;
+    height: 50%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%);
+    z-index: 1; /* Ensure the gradient is above the image */
+    pointer-events: none; /* Ensures the overlay doesn't interfere with interactions */
+  }
+  
+
+.overlay-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    pointer-events: none; /* Ensures the content is non-interactive */
+  }
+
+.circle_profile {
+    position: absolute;
+    top: 250px;
+    left: 20px;
+    width: 30%;
+    border-radius: 50%;
+    z-index: 1; /* Ensures theq circular profile is above the background profile */
+}
+.profile-picture {
+    display: flex;
+    justify-content: start;
+    align-items:start;
+}
+
+.usernamepr {
+    font-size: 60px;
+    color: rgb(145, 81, 158);
+    padding-left: 250px;
+    margin-top: -340px;
+}
+.button {
+    display: flex;
+    padding-left: 200px;
+    padding-top: 40px;
+    gap: 60px;
+}
+.add, .block, .message {
+    width: 140px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 15px;
+    background-color: #e6e6fad8;
+    margin-left: 40px;
+}
+
+.container {
+    position: relative;
+    display: inline-block; /* Allows the container to shrink-wrap its content */
+}
+
+p {
+    margin-left: 20px;
+}
+
+.threebutuser {
+    margin-left: 180px;
+    margin-top: 20px;
+}
+.about_line {
+    margin-top: 20px;
+    margin-left: 30px;
+}
+
+.threebutfriend {
+    margin-left: 180px;
+    margin-top: 20px;
+}

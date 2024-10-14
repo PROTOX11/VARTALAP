@@ -1,0 +1,103 @@
+/* Ensure your container is a positioned element if you need relative positioning */
+.container {
+  position: relative;
+  display: inline-block; /* Allows the container to shrink-wrap its content */
+}
+
+.toback {
+  position: absolute;
+  top: 10px; /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
+  background: none; /* Remove any default button styling */
+  border: none; /* Remove border */
+  z-index: 100; /* Ensure it's above other elements */
+  cursor: pointer; /* Add a pointer cursor on hover */
+}
+
+.backimg {
+  width: 30px; /* Adjust the size as needed */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.post_area {
+  display: flex;
+  justify-content: center; /* Center the content within the post area */
+  position: relative; /* Make the container a positioned element */
+  width: 100%;
+  height: 100vh; /* Full viewport height */
+  background-size: cover; /* Cover the entire element */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the image from repeating */
+}
+
+
+.circle_profile {
+  position: absolute;
+  top: 250px;
+  left: 20px;
+  width: 30%;
+  border-radius: 50%;
+  z-index: 1; /* Ensure the circular profile is above the background profile */
+}
+
+.usernamepr {
+  font-size: 60px;
+  color: rgb(145, 81, 158);
+  padding-left: 250px;
+  margin-top: -320px;
+}
+
+
+.add, .block, .message {
+    width: 120px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 20px;
+}
+
+.home-button {
+    width: 50px;
+    position: fixed;
+    padding-left: 10px;
+    padding-top: 100px;
+}
+.log_but {
+    margin-left: 650px;
+    width: 280px;
+  }
+  
+  .logposL {
+    display: flex;
+    padding-left: 30px;
+    padding-top: 40px;
+    align-items: center;
+    border: none; /* Remove outer border */
+    background-color: transparent; /* Make background transparent */
+    cursor: pointer; /* Show pointer cursor on hover */
+  }
+  
+  .logposL:focus {
+    outline: none; /* Remove default focus outline */
+  }
+  
+  .logposL img {
+    width: 40%;
+  }
+  
+.register-button {
+  text-decoration: none;
+  padding-right: 10px;
+  padding-top: 5px;
+  cursor: pointer;
+
+}
+.register-box {
+  margin-left: 900px;
+  padding-left: 35px;
+  padding-top: 10px;
+  border-radius: 20px;
+  width: 180px;
+  height: 40px;
+  background-color: rgb(175, 92, 242);
+  text-decoration: none;
+}
