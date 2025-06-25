@@ -12,6 +12,7 @@ const upload = require('../routes/upload');
 // User registration
 router.post("/new", async (req, res) => {
     try {
+        console.log("Incoming body:", req.body);
         const { username, mobile_number, password, friends } = req.body;
         const user = new User({ username, mobile_number, password, friends });
         await user.save();
