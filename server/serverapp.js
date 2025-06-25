@@ -15,7 +15,7 @@ async function startServer() {
   try {
     db = await connectToMongo();
     app.use(cors({
-      origin: 'https://vartalap-9ai9k86f1-vartalaps-projects.vercel.app/',
+      origin: 'https://vartalap-git-main-vartalaps-projects.vercel.app/',
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       credentials: true
     }));
