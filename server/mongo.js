@@ -5,10 +5,11 @@ const { DB_URI } = require('./config');
 let client;
 
 async function connectToMongo() {
+    console.log('Attempting to connect with DB_URI:', DB_URI); // Debug log
     try {
         client = new MongoClient(DB_URI, {
-            ssl: true, // Enforce SSL for Atlas
-            tlsInsecure: false // Ensure secure TLS (set to true only for testing if needed)
+            ssl: true,
+            tlsInsecure: false
         });
         await client.connect();
         console.log('Connected to MongoDB Atlas');
