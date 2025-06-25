@@ -1,119 +1,60 @@
+// server/serverapp.js
 const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const userRoutes = require('./routes/userRoutes');
-var morgan = require("morgan");
-var cookieParser = require("cookie-parser");
-var session = require("express-session");
 const cors = require('cors');
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const { connectToMongo, getDb } = require('../mongo'); // Relative path from server
+
 const app = express();
-const {DB_URI, SECRET_KEY} = require('./config');
+let db;
 
-const PORT = 4500;
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.json());
-app.use(cors());
-app.use(morgan("dev"));
-app.use(cookieParser());
+const PORT = process.env.PORT || 4500;
 
-app.use(
-    session({
+async function startServer() {
+  try {
+    db = await connectToMongo();
+    app.use(cors({
+      origin: 'https://vartalap.vercel.app',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true
+    }));
+    app.use(morgan("dev"));
+    app.use(cookieParser());
+    app.use(express.json());
+    app.use(session({
       key: "user_sid",
-      secret: SECRET_KEY,
+      secret: process.env.SECRET_KEY || 'aamkaachar',
       resave: false,
       saveUninitialized: false,
       cookie: {
-        expires: 600000,
-      },
-    })
-  );
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }));
+    app.use("/api/v1/user", require('./routes/userRoutes'));
 
-app.use("/api/v1/user", userRoutes);
-
-
-app.get('/logout', (req, res) => {
-  if (req.session.user) {
-    req.session.destroy();
-    res.clearCookie('user_sid');
-    res.redirect('/');
-  } else {
-    res.redirect('/Logged');
-  }
-});
-
-
-
-
-
-mongoose.connect(DB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => {
-    console.log("Connected to MongoDB");
-    app.listen(PORT, () => {
-        console.log("Server is running at http://localhost:4500");
+    app.get('/logout', (req, res) => {
+      if (req.session.user) {
+        req.session.destroy();
+        res.clearCookie('user_sid');
+        res.redirect('/');
+      } else {
+        res.redirect('/Logged');
+      }
     });
-})
-.catch((err) => {
-    console.error("MongoDB connection error:", err);
-});
 
-// Basic error handling middleware
+    app.listen(PORT, () => console.log(`Server on port ${PORT}`));
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
-
-
-
-
-///  from here for more advanced features
-
-
-
-
-
-
-
-/////// enaabling bottom code in future for more features//
-
-// update user create account
-
-// app.put("/api/v1/user/:id",async(req,res)=> {
-
-//     let user = await User.findById(req.params.id)
-
-//     user = await User.findByIdAndUpdate(req.params.id,req.body,{new:true,
-//         useFindandModify:false,
-//         runValidators:true
-//     })
-//     res.status(200).json({
-//         success:true,
-//         user
-//     })
-
-// })
-
-//delete user
-
-// app.delete("/api/v1/user/:id",async(req,res)=> {
-
-//     const user = await User.findById(req.params.id);
-
-//     if(!user){
-//         return res.status(500).json({
-//             success:false,
-//             message:"user is not found"
-//         });
-//     }
-//     await user.deleteOne();
-
-//     res.status(200).json({
-//         success:true,
-//         message:"user is deleted successfully"
-//     })
-// })
-
-

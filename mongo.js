@@ -1,34 +1,24 @@
-
+// mongo.js
 const { MongoClient } = require('mongodb');
+const { DB_URI } = require('./server/config');
 
-const uri = 'mongodb://localhost:27017';
-
-
-const dbName = 'myDatabase'; 
-
+let client;
 
 async function connectToMongo() {
-    
-    const client = new MongoClient(uri);
-
     try {
-        
+        client = new MongoClient(DB_URI);
         await client.connect();
-
-        console.log('Connected to MongoDB');
-
-        
-        const database = client.db(dbName);
-
-        
+        console.log('Connected to MongoDB Atlas');
+        return client.db('myDatabase');
     } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-    } finally {
-        
-        await client.close();
-        console.log('Disconnected from MongoDB');
+        console.error('Error connecting to MongoDB Atlas:', error);
+        throw error;
     }
 }
 
+function getDb() {
+    if (!client) throw new Error('MongoDB client not initialized');
+    return client.db('myDatabase');
+}
 
-connectToMongo();
+module.exports = { connectToMongo, getDb };
