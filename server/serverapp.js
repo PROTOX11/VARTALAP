@@ -4,7 +4,7 @@ const cors = require('cors');
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-const { connectToMongo, getDb } = require('../mongo'); // Relative path from server
+const { connectToMongo, getDb } = require('./mongo'); // Relative path from server
 
 const app = express();
 let db;

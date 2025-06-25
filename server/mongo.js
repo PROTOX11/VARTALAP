@@ -1,6 +1,6 @@
 // mongo.js
 const { MongoClient } = require('mongodb');
-const { DB_URI } = require('./server/config');
+const { DB_URI } = require('./config');
 
 let client;
 
