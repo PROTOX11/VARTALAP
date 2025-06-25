@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node serverapp.js",
-    "dev": "nodemon serverapp.js",
     "postinstall": "npm rebuild bcrypt --build-from-source"
   },
   "keywords": [],
