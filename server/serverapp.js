@@ -14,8 +14,20 @@ const PORT = process.env.PORT || 4500;
 async function startServer() {
   try {
     db = await connectToMongo();
+    const allowedOrigins = [
+      'https://vartalap.vercel.app',
+      'https://vartalap-git-main-vartalaps-projects.vercel.app',
+    ];
+
     app.use(cors({
-      origin: 'https://vartalap-git-main-vartalaps-projects.vercel.app/',
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || /^https:\/\/vartalap-[\w-]+\.vercel\.app$/.test(origin)) {
+          callback(null, true);
+        } else {
+          console.log('Blocked by CORS:', origin);
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       credentials: true
     }));
