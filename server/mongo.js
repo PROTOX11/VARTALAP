@@ -6,7 +6,10 @@ let client;
 
 async function connectToMongo() {
     try {
-        client = new MongoClient(DB_URI);
+        client = new MongoClient(DB_URI, {
+            ssl: true, // Enforce SSL for Atlas
+            tlsInsecure: false // Ensure secure TLS (set to true only for testing if needed)
+        });
         await client.connect();
         console.log('Connected to MongoDB Atlas');
         return client.db('myDatabase');
