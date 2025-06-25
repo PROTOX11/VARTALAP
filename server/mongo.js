@@ -1,28 +1,17 @@
-// mongo.js
-const { MongoClient } = require('mongodb');
-const { DB_URI } = require('./config');
-
-let client;
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 async function connectToMongo() {
-    console.log('Attempting to connect with DB_URI:', DB_URI); // Debug log
     try {
-        client = new MongoClient(DB_URI, {
-            ssl: true,
-            tlsInsecure: false
+        await mongoose.connect(process.env.DB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
         });
-        await client.connect();
-        console.log('Connected to MongoDB Atlas');
-        return client.db('myDatabase');
+        console.log('✅ Connected to MongoDB Atlas with Mongoose');
     } catch (error) {
-        console.error('Error connecting to MongoDB Atlas:', error);
+        console.error('❌ MongoDB connection error:', error);
         throw error;
     }
 }
 
-function getDb() {
-    if (!client) throw new Error('MongoDB client not initialized');
-    return client.db('myDatabase');
-}
-
-module.exports = { connectToMongo, getDb };
+module.exports = { connectToMongo };
