@@ -22,7 +22,7 @@ function Left() {
 
     const handleUpdateUsername = async () => {
         try {
-            const response = await fetch('http://localhost:4500/api/v1/update-username', {
+            const response = await fetch('https://vartalap-7crg.onrender.com/api/v1/update-username', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ function Home() {
     e.preventDefault();
     console.log('handleLogin invoked');
     try {
-      const response = await axios.post('http://localhost:4500/api/v1/user/login', formData);
+      const response = await axios.post('https://vartalap-7crg.onrender.com/api/v1/user/login', formData);
       const { token } = response.data;
       localStorage.setItem('token', token);
       navigate('/Logged');

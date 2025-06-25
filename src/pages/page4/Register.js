@@ -22,7 +22,7 @@ function UserRegistrationForm() {
         ...formData,
         mobile_number: Number(formData.mobile_number)
       };
-      const response = await axios.post('http://localhost:4500/api/v1/user/new', payload);
+      const response = await axios.post('https://vartalap-7crg.onrender.com/api/v1/user/new', payload);
       console.log('Response:', response); 
       setText('Account created successfully');
       setFormData({ username: '', mobile_number: '', password: '' });

@@ -9,7 +9,7 @@ const useUserData = () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
-                    const response = await axios.get('http://localhost:4500/api/v1/user/userData', {
+                    const response = await axios.get('https://vartalap-7crg.onrender.com/api/v1/user/userData', {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
