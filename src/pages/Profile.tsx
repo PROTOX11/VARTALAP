@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { ArrowLeft, Camera, Edit3, Settings, Grid, Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -49,7 +50,7 @@ const Profile: React.FC = () => {
     }
   };
 
-  const userPosts = user?.posts || [];
+  const { userPosts } = useAuth();
   const savedPosts = userPosts.filter(post => user?.savedPosts.includes(post.id));
 
   return (
@@ -61,7 +62,7 @@ const Profile: React.FC = () => {
             onClick={() => navigate('/dashboard')}
             className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <ArrowLeft size={20} md:size={24} className="text-gray-700 dark:text-gray-300" />
+            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300 md:size=24" />
           </button>
         </div>
 
@@ -85,7 +86,7 @@ const Profile: React.FC = () => {
             />
           )}
           <label className="absolute bottom-2 md:bottom-4 right-2 md:right-4 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <Camera size={16} md:size={20} className="text-gray-700 dark:text-gray-300" />
+            <Camera size={16} className="text-gray-700 dark:text-gray-300 md:size=20" />
             <input
               type="file"
               accept="image/*"
@@ -106,7 +107,7 @@ const Profile: React.FC = () => {
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"
               />
               <label className="absolute bottom-1 md:bottom-2 right-1 md:right-2 p-1.5 md:p-2 bg-purple-600 rounded-full cursor-pointer hover:bg-purple-700 transition-colors">
-                <Camera size={12} md:size={16} className="text-white" />
+                <Camera size={12} className="text-white md:size=16" />
                 <input
                   type="file"
                   accept="image/*"
@@ -153,7 +154,7 @@ const Profile: React.FC = () => {
                   </>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4">
                 <button className="px-4 md:px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                   Update profile
@@ -179,7 +180,7 @@ const Profile: React.FC = () => {
               <Edit3 size={16} />
             </button>
           </div>
-          
+
           {isEditingAbout ? (
             <div className="space-y-3">
               <textarea
@@ -220,22 +221,20 @@ const Profile: React.FC = () => {
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveTab('posts')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 ${
-                activeTab === 'posts'
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 ${activeTab === 'posts'
                   ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
                   : 'text-gray-500 dark:text-gray-400'
-              }`}
+                }`}
             >
               <Grid size={20} />
               <span>Posts ({userPosts.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('saved')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 ${
-                activeTab === 'saved'
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 ${activeTab === 'saved'
                   ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
                   : 'text-gray-500 dark:text-gray-400'
-              }`}
+                }`}
             >
               <Bookmark size={20} />
               <span>Saved ({savedPosts.length})</span>

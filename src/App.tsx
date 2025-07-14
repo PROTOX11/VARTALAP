@@ -33,9 +33,9 @@ function App() {
           <Router>
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
               <Toaster
-                position="top-right"
+                position="top-center"
                 toastOptions={{
-                  duration: 3000,
+                  duration: 2000,
                   style: {
                     background: 'var(--toast-bg)',
                     color: 'var(--toast-color)',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search as SearchIcon, Users, Hash, MapPin } from 'lucide-react';
+import { Search as SearchIcon, Users, Hash, MapPin, MessageCircle } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
@@ -60,6 +60,11 @@ const Search: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Search</h1>
             <div className='flex space-x-3'>
+              <button
+              onClick={() => navigate('/chat')}
+              className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
+              <MessageCircle size={24} />
+              </button>
               <ThemeToggle />
               <button
                 onClick={() => navigate('/profile')}

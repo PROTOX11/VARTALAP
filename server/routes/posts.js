@@ -43,6 +43,19 @@ router.post('/', [auth, upload.single('image')], [
   }
 });
 
+// Get Posts by Logged-in User
+router.get('/my-posts', auth, async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.user._id, isActive: true })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username profilePicture');
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch user posts' });
+  }
+});
+
+
 // Get Feed Posts
 router.get('/feed', auth, async (req, res) => {
   try {
@@ -54,16 +67,16 @@ router.get('/feed', auth, async (req, res) => {
     const userFriends = req.user.friends || [];
     const userIds = [req.user._id, ...userFriends];
 
-    const posts = await Post.find({ 
-      user: { $in: userIds }, 
-      isActive: true 
+    const posts = await Post.find({
+      user: { $in: userIds },
+      isActive: true
     })
-    .populate('user', 'username profilePicture')
-    .populate('likes.user', 'username')
-    .populate('comments.user', 'username profilePicture')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+      .populate('user', 'username profilePicture')
+      .populate('likes.user', 'username')
+      .populate('comments.user', 'username profilePicture')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.json(posts);
   } catch (error) {
@@ -76,7 +89,7 @@ router.get('/feed', auth, async (req, res) => {
 router.post('/:postId/like', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
-    
+
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -94,8 +107,8 @@ router.post('/:postId/like', auth, async (req, res) => {
     }
 
     await post.save();
-    
-    res.json({ 
+
+    res.json({
       message: likeIndex > -1 ? 'Post unliked' : 'Post liked',
       likesCount: post.likes.length,
       isLiked: likeIndex === -1
@@ -117,7 +130,7 @@ router.post('/:postId/comment', auth, [
     }
 
     const post = await Post.findById(req.params.postId);
-    
+
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -129,10 +142,10 @@ router.post('/:postId/comment', auth, [
 
     post.comments.push(comment);
     await post.save();
-    
+
     await post.populate('comments.user', 'username profilePicture');
 
-    res.json({ 
+    res.json({
       message: 'Comment added successfully',
       comment: post.comments[post.comments.length - 1]
     });
@@ -146,7 +159,7 @@ router.post('/:postId/comment', auth, [
 router.delete('/:postId', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
-    
+
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -169,7 +182,7 @@ router.delete('/:postId', auth, async (req, res) => {
 router.post('/:postId/save', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
-    
+
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -188,8 +201,8 @@ router.post('/:postId/save', auth, async (req, res) => {
     }
 
     await user.save();
-    
-    res.json({ 
+
+    res.json({
       message: savedIndex > -1 ? 'Post unsaved' : 'Post saved',
       isSaved: savedIndex === -1
     });

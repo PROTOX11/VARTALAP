@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Heart, MessageCircle, UserPlus, Zap } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, User, UserPlus, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
@@ -163,7 +163,18 @@ const Notifications: React.FC = () => {
                   Mark all as read
                 </button>
               )}
+              <button
+                            onClick={() => navigate('/chat')}
+                            className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
+                            <MessageCircle size={24} />
+                            </button>
               <ThemeToggle />
+              <button
+              onClick={() => navigate('/profile')}
+              className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+            >
+              <User size={20} />
+            </button>
             </div>
           </div>
         </div>

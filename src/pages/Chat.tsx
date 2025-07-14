@@ -95,18 +95,18 @@ const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 md:pl-60">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row pb-20 md:pb-0">
+      <div className="flex-1 flex flex-col md:flex-row pb-20 md:pb-0 md:pl-4">
         {/* Chat List */}
         <div className={`w-full md:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 ${selectedUser ? 'hidden md:block' : 'block'}`}>
           {/* Header */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between ">
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => navigate('/dashboard')}

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Play, Pause, Volume2, VolumeX, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
@@ -140,7 +140,12 @@ const Reels: React.FC = () => {
         <div className="hidden md:block absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">Reels</h1>
-            <ThemeToggle />
+            <button
+              onClick={() => navigate('/profile')}
+              className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+            >
+              <User size={20} />
+            </button>
           </div>
         </div>
 

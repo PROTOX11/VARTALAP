@@ -38,6 +38,7 @@ interface Friend {
 
 interface AuthContextType {
   user: User | null;
+  userPosts: Post[];
   login: (emailOrPhone: string, password: string) => Promise<boolean>;
   signup: (userData: any) => Promise<boolean>;
   logout: () => void;
@@ -60,6 +61,25 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+
+  const fetchUserPosts = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await fetch('http://localhost:5000/api/posts/my-posts', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const posts = Array.isArray(data) ? data : data.posts;
+        setUserPosts(posts || []);
+      }
+    } catch (err) {
+      console.error('Failed to load user posts:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -75,8 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const userData = await response.json();
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
+            fetchUserPosts();
           } else {
-            // Token is invalid or expired
             logout();
           }
         } catch (error) {
@@ -85,8 +105,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     };
+
     fetchUser();
   }, []);
+
 
   const login = async (emailOrPhone: string, password: string): Promise<boolean> => {
     try {
@@ -104,10 +126,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.error(data.message || 'Login failed. Please try again.');
         return false;
       }
-      
+
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
+      setUserPosts(data.user.posts || []);
       toast.success('Login successful!');
       return true;
     } catch (error) {
@@ -133,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.error(data.message || 'Signup failed. Please try again.');
         return false;
       }
-      
+
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
@@ -173,7 +196,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
         while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+          u8arr[n] = bstr.charCodeAt(n);
         }
         return new Blob([u8arr], { type: mime });
       }
@@ -234,7 +257,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedPosts = user.savedPosts.includes(postId)
         ? user.savedPosts.filter(id => id !== postId)
         : [...user.savedPosts, postId];
-      
+
       const updatedUser = { ...user, savedPosts };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -245,66 +268,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const createPost = async (postData: { type: 'text' | 'image', content?: string, image?: string }): Promise<boolean> => {
     if (!user) return false;
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          toast.error("Authentication token not found.");
-          return false;
-        }
-
-        const formData = new FormData();
-        
-        const dataURLtoBlob = (dataurl: string) => {
-          const arr = dataurl.split(',');
-          const mimeMatch = arr[0].match(/:(.*?);/);
-          if (!mimeMatch) return null;
-          const mime = mimeMatch[1];
-          const bstr = atob(arr[1]);
-          let n = bstr.length;
-          const u8arr = new Uint8Array(n);
-          while (n--) {
-              u8arr[n] = bstr.charCodeAt(n);
-          }
-          return new Blob([u8arr], { type: mime });
-        }
-        
-        formData.append('type', postData.type);
-        if (postData.content) {
-            formData.append('content', postData.content);
-        }
-
-        if (postData.image && postData.image.startsWith('data:')) {
-            const blob = dataURLtoBlob(postData.image);
-            if (blob) formData.append('image', blob, 'post.jpg');
-        }
-
-        const response = await fetch('http://localhost:5000/api/posts', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-            body: formData,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            toast.error(data.message || 'Failed to create post.');
-            return false;
-        }
-
-        if (user) {
-            const updatedPosts = [data.post, ...(user.posts || [])];
-            const updatedUser = { ...user, posts: updatedPosts };
-            setUser(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-        }
-
-        toast.success('Post created successfully!');
-        return true;
-    } catch (error) {
-        console.error(error);
-        toast.error('Failed to create post.');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("Authentication token not found.");
         return false;
+      }
+
+      const formData = new FormData();
+
+      const dataURLtoBlob = (dataurl: string) => {
+        const arr = dataurl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        if (!mimeMatch) return null;
+        const mime = mimeMatch[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+      }
+
+      formData.append('type', postData.type);
+      if (postData.content) {
+        formData.append('content', postData.content);
+      }
+
+      if (postData.image && postData.image.startsWith('data:')) {
+        const blob = dataURLtoBlob(postData.image);
+        if (blob) formData.append('image', blob, 'post.jpg');
+      }
+
+      const response = await fetch('http://localhost:5000/api/posts', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || 'Failed to create post.');
+        return false;
+      }
+
+      if (user) {
+        const updatedPosts = [data.post, ...(user.posts || [])];
+        const updatedUser = { ...user, posts: updatedPosts };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+
+      toast.success('Post created successfully!');
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to create post.');
+      return false;
     }
   };
 
@@ -313,16 +336,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
-      signup, 
-      logout, 
-      updateProfile, 
-      deletePost, 
+    <AuthContext.Provider value={{
+      user,
+      userPosts,
+      login,
+      signup,
+      logout,
+      updateProfile,
+      deletePost,
       toggleSavePost,
       updateUsername,
-      createPost 
+      createPost
     }}>
       {children}
     </AuthContext.Provider>
