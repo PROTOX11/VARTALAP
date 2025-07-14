@@ -62,72 +62,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch('http://localhost:5000/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+          } else {
+            // Token is invalid or expired
+            logout();
+          }
+        } catch (error) {
+          console.error("Failed to fetch user", error);
+          logout();
+        }
+      }
+    };
+    fetchUser();
   }, []);
 
   const login = async (emailOrPhone: string, password: string): Promise<boolean> => {
     try {
-      // Simulate API call with validation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailOrPhone, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || 'Login failed. Please try again.');
+        return false;
+      }
       
-      const mockUser: User = {
-        id: '1',
-        username: 'admin1234',
-        email: 'admin@example.com',
-        phone: '+1234567890',
-        profilePicture: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-        coverPhoto: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1200',
-        about: 'I am a student of India',
-        isOnline: true,
-        posts: [
-          {
-            id: '1',
-            type: 'image',
-            content: 'Beautiful day at the temple!',
-            image: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=800',
-            likes: 42,
-            comments: 8,
-            timestamp: '2 hours ago',
-            isLiked: false,
-            isSaved: false
-          },
-          {
-            id: '2',
-            type: 'text',
-            content: 'Just finished an amazing workout session! 💪',
-            likes: 23,
-            comments: 5,
-            timestamp: '1 day ago',
-            isLiked: true,
-            isSaved: false
-          }
-        ],
-        savedPosts: [],
-        friends: [
-          {
-            id: '1',
-            username: 'alice',
-            profilePicture: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-            isOnline: true
-          },
-          {
-            id: '2',
-            username: 'bob',
-            profilePicture: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
-            isOnline: false,
-            lastSeen: '2 hours ago'
-          }
-        ]
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
       toast.success('Login successful!');
       return true;
     } catch (error) {
+      console.error(error);
       toast.error('Login failed. Please try again.');
       return false;
     }
@@ -309,7 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (user) {
-            const updatedPosts = [data.post, ...user.posts];
+            const updatedPosts = [data.post, ...(user.posts || [])];
             const updatedUser = { ...user, posts: updatedPosts };
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
