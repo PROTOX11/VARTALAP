@@ -64,90 +64,43 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Sidebar />
-      </div>
+      <Sidebar />
       
-      <div className="flex-1 flex flex-col md:flex-row">
+      <div className="flex-1 flex flex-col md:flex-row md:ml-64">
         {/* Mobile Header */}
-        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+        <div className="md:hidden fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between z-50">
           <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">VARTALAP</h1>
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => navigate('/notifications')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-full"
             >
               <Bell size={24} />
             </button>
             <button 
               onClick={() => navigate('/chat')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-full"
             >
               <MessageCircle size={24} />
             </button>
             <ThemeToggle />
             <button 
               onClick={() => navigate('/profile')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-full"
             >
               <User size={24} />
             </button>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className="flex-1 p-4 md:p-6 pb-20 md:pb-6">
-          <div className="mb-4 md:mb-6">
-            <FriendsList friends={mockFriends} />
-          </div>
-          
-          <div className="space-y-4 md:space-y-6">
-            {mockPosts.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
-                onDelete={deletePost}
-                onSave={toggleSavePost}
-              />
-            ))}
-          </div>
-        </div>
-        
-        {/* Desktop Right Sidebar */}
-        <div className="hidden md:block w-80 p-6">
-          <div className="flex justify-end items-center space-x-3 mb-6">
-            <ThemeToggle />
-            <button 
-              onClick={() => navigate('/profile')}
-              className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
-            >
-              <User size={20} />
-            </button>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <img
-                src={user?.profilePicture}
-                alt={user?.username}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{user?.username}</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Online</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Mobile Navigation */}
-      <MobileNavigation />
+      <div className="pt-16">
+        <MobileNavigation />
+      </div>
     </div>
+  );
+};
+
+export default Dashboard;
   );
 };
 

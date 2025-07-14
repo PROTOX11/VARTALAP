@@ -23,7 +23,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-purple-100 dark:bg-gray-800 p-6 flex flex-col">
+    <div className="fixed top-0 left-0 w-64 h-screen bg-purple-100 dark:bg-gray-800 p-6 z-40 hidden md:flex flex-col">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-purple-600 dark:text-purple-400">VARTALAP</h1>
       </div>
