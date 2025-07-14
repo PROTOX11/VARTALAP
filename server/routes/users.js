@@ -3,11 +3,17 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const Post = require('../models/Post');
 const auth = require('../middleware/auth');
+const upload = require('../cloudinary');
 
 const router = express.Router();
 
 // Update Profile
-router.put('/profile', auth, [
+router.put('/profile', [
+  auth,
+  upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'coverPhoto', maxCount: 1 }
+  ]),
   body('username').optional().isLength({ min: 3, max: 20 }).trim(),
   body('about').optional().isLength({ max: 500 }).trim()
 ], async (req, res) => {
@@ -18,11 +24,20 @@ router.put('/profile', auth, [
     }
 
     const updates = req.body;
+    if (req.files) {
+      if (req.files.profilePicture) {
+        updates.profilePicture = req.files.profilePicture[0].path;
+      }
+      if (req.files.coverPhoto) {
+        updates.coverPhoto = req.files.coverPhoto[0].path;
+      }
+    }
+    
     const user = await User.findByIdAndUpdate(
       req.user._id,
       updates,
       { new: true, runValidators: true }
-    );
+    ).select('-password');
 
     res.json({ message: 'Profile updated successfully', user });
   } catch (error) {

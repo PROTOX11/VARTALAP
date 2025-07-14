@@ -9,7 +9,7 @@ import { User } from 'lucide-react';
 
 const CreatePost: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, createPost } = useAuth();
   const [postType, setPostType] = useState<'text' | 'image'>('text');
   const [content, setContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -26,11 +26,21 @@ const CreatePost: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the post to your backend
-    console.log('Creating post:', { type: postType, content, image: selectedImage });
-    navigate('/dashboard');
+    if (!content.trim() && !selectedImage) {
+      return;
+    }
+
+    const success = await createPost({
+      type: postType,
+      content,
+      image: selectedImage || undefined,
+    });
+
+    if (success) {
+      navigate('/dashboard');
+    }
   };
 
   return (

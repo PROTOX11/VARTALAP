@@ -3,11 +3,12 @@ const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const upload = require('../cloudinary');
 
 const router = express.Router();
 
 // Create Post
-router.post('/', auth, [
+router.post('/', [auth, upload.single('image')], [
   body('type').isIn(['text', 'image', 'reel']),
   body('content').optional().trim()
 ], async (req, res) => {
@@ -17,16 +18,20 @@ router.post('/', auth, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { type, content, image, video, location } = req.body;
+    const { type, content, location } = req.body;
 
-    const post = new Post({
+    const postData = {
       user: req.user._id,
       type,
       content,
-      image,
-      video,
-      location
-    });
+      location,
+    };
+
+    if (req.file) {
+      postData.image = req.file.path;
+    }
+
+    const post = new Post(postData);
 
     await post.save();
     await post.populate('user', 'username profilePicture');

@@ -41,10 +41,11 @@ interface AuthContextType {
   login: (emailOrPhone: string, password: string) => Promise<boolean>;
   signup: (userData: any) => Promise<boolean>;
   logout: () => void;
-  updateProfile: (updates: Partial<User>) => void;
+  updateProfile: (updates: Partial<User>) => Promise<boolean>;
   deletePost: (postId: string) => void;
   toggleSavePost: (postId: string) => void;
   updateUsername: (newUsername: string) => Promise<boolean>;
+  createPost: (postData: { type: 'text' | 'image', content?: string, image?: string }) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -168,12 +169,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success('Logged out successfully!');
   };
 
-  const updateProfile = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+  const updateProfile = async (updates: Partial<User>): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("Authentication token not found.");
+        return false;
+      }
+      const formData = new FormData();
+
+      const dataURLtoBlob = (dataurl: string) => {
+        const arr = dataurl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        if (!mimeMatch) return null;
+        const mime = mimeMatch[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+      }
+
+      if (updates.username) formData.append('username', updates.username);
+      if (updates.about) formData.append('about', updates.about);
+
+      if (updates.profilePicture && typeof updates.profilePicture === 'string' && updates.profilePicture.startsWith('data:')) {
+        const blob = dataURLtoBlob(updates.profilePicture);
+        if (blob) formData.append('profilePicture', blob, 'profile.jpg');
+      }
+
+      if (updates.coverPhoto && typeof updates.coverPhoto === 'string' && updates.coverPhoto.startsWith('data:')) {
+        const blob = dataURLtoBlob(updates.coverPhoto);
+        if (blob) formData.append('coverPhoto', blob, 'cover.jpg');
+      }
+
+      if ([...formData.entries()].length === 0) return true;
+
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || 'Profile update failed.');
+        return false;
+      }
+
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
       toast.success('Profile updated successfully!');
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error('Profile update failed.');
+      return false;
     }
   };
 
@@ -200,23 +258,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUsername = async (newUsername: string): Promise<boolean> => {
+  const createPost = async (postData: { type: 'text' | 'image', content?: string, image?: string }): Promise<boolean> => {
+    if (!user) return false;
     try {
-      // Simulate API call to check username availability
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (user) {
-        const updatedUser = { ...user, username: newUsername };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        toast.success('Username updated successfully!');
+        const token = localStorage.getItem('token');
+        if (!token) {
+          toast.error("Authentication token not found.");
+          return false;
+        }
+
+        const formData = new FormData();
+        
+        const dataURLtoBlob = (dataurl: string) => {
+          const arr = dataurl.split(',');
+          const mimeMatch = arr[0].match(/:(.*?);/);
+          if (!mimeMatch) return null;
+          const mime = mimeMatch[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+              u8arr[n] = bstr.charCodeAt(n);
+          }
+          return new Blob([u8arr], { type: mime });
+        }
+        
+        formData.append('type', postData.type);
+        if (postData.content) {
+            formData.append('content', postData.content);
+        }
+
+        if (postData.image && postData.image.startsWith('data:')) {
+            const blob = dataURLtoBlob(postData.image);
+            if (blob) formData.append('image', blob, 'post.jpg');
+        }
+
+        const response = await fetch('http://localhost:5000/api/posts', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast.error(data.message || 'Failed to create post.');
+            return false;
+        }
+
+        if (user) {
+            const updatedPosts = [data.post, ...user.posts];
+            const updatedUser = { ...user, posts: updatedPosts };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+
+        toast.success('Post created successfully!');
         return true;
-      }
-      return false;
     } catch (error) {
-      toast.error('Failed to update username. Please try again.');
-      return false;
+        console.error(error);
+        toast.error('Failed to create post.');
+        return false;
     }
+  };
+
+  const updateUsername = async (newUsername: string): Promise<boolean> => {
+    return updateProfile({ username: newUsername });
   };
 
   return (
@@ -228,7 +337,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateProfile, 
       deletePost, 
       toggleSavePost,
-      updateUsername 
+      updateUsername,
+      createPost 
     }}>
       {children}
     </AuthContext.Provider>
