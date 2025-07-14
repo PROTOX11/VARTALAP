@@ -36,7 +36,7 @@ const CreatePost: React.FC = () => {
       <Sidebar />
       
       <div className="flex-1 p-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto pl-40">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button

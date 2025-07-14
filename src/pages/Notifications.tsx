@@ -141,9 +141,10 @@ const Notifications: React.FC = () => {
           </div>
           <ThemeToggle />
         </div>
+        
 
         {/* Desktop Header */}
-        <div className="hidden md:block p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="hidden md:block p-6 border-b border-gray-200 dark:border-gray-700 md:pl-80">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Notifications
@@ -180,7 +181,7 @@ const Notifications: React.FC = () => {
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-2 md:pl-60">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
