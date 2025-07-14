@@ -112,7 +112,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Desktop Right Sidebar */}
-        <div className="hidden md:block w-80 p-6">
+        <div className="hidden md:block w-25 p-6">
           <div className="flex justify-end items-center space-x-3 mb-6">
             <ThemeToggle />
             <button
@@ -122,31 +122,12 @@ const Dashboard: React.FC = () => {
               <User size={20} />
             </button>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <img
-                src={user?.profilePicture}
-                alt={user?.username}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{user?.username}</h3>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Online</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Mobile Navigation */}
       <MobileNavigation />
 
-      {/* Mobile Navigation */}
-      <MobileNavigation />
     </div>
   );
 };

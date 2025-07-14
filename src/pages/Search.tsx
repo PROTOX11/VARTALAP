@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Search as SearchIcon, Users, Hash, MapPin } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
+import MobileNavigation from '../components/MobileNavigation';
+import { User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'people' | 'hashtags' | 'places'>('people');
-
+  const navigate = useNavigate();
   const mockPeople = [
     {
       id: '1',
@@ -51,13 +54,23 @@ const Search: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      
+
       <div className="flex-1 p-6">
-        <div className="max-w-4xl mx-auto pl-60">
+        <div className="max-w-4xl mx-auto md:pl-60">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Search</h1>
-            <ThemeToggle />
+            <div className='flex space-x-3'>
+              <ThemeToggle />
+              <button
+                onClick={() => navigate('/profile')}
+                className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+              >
+                <User size={20} />
+              </button>
+            </div>
+
           </div>
+
 
           {/* Search Bar */}
           <div className="relative mb-6">
@@ -75,33 +88,30 @@ const Search: React.FC = () => {
           <div className="flex space-x-1 mb-6 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('people')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                activeTab === 'people'
-                  ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'people'
+                ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <Users size={18} />
               <span>People</span>
             </button>
             <button
               onClick={() => setActiveTab('hashtags')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                activeTab === 'hashtags'
-                  ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'hashtags'
+                ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <Hash size={18} />
               <span>Hashtags</span>
             </button>
             <button
               onClick={() => setActiveTab('places')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                activeTab === 'places'
-                  ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'places'
+                ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <MapPin size={18} />
               <span>Places</span>
@@ -127,11 +137,10 @@ const Search: React.FC = () => {
                       </div>
                     </div>
                     <button
-                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                        person.isFollowing
-                          ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                          : 'bg-purple-600 text-white hover:bg-purple-700'
-                      }`}
+                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${person.isFollowing
+                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                        }`}
                     >
                       {person.isFollowing ? 'Following' : 'Follow'}
                     </button>
@@ -174,6 +183,7 @@ const Search: React.FC = () => {
           </div>
         </div>
       </div>
+      <MobileNavigation />
     </div>
   );
 };

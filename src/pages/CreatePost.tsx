@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
+import MobileNavigation from '../components/MobileNavigation';
+import { User } from 'lucide-react';
 
 const CreatePost: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ const CreatePost: React.FC = () => {
       <Sidebar />
       
       <div className="flex-1 p-6">
-        <div className="max-w-2xl mx-auto pl-40">
+        <div className="max-w-2xl mx-auto md:pl-40">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
@@ -47,7 +49,15 @@ const CreatePost: React.FC = () => {
               </button>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Post</h1>
             </div>
+            <div className='flex space-x-3'>
             <ThemeToggle />
+            <button
+                onClick={() => navigate('/profile')}
+                className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+              >
+                <User size={20} />
+              </button>
+            </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -142,6 +152,7 @@ const CreatePost: React.FC = () => {
           </div>
         </div>
       </div>
+            <MobileNavigation />
     </div>
   );
 };
