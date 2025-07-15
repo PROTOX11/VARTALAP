@@ -14,7 +14,10 @@ interface User {
   posts: Post[];
   savedPosts: string[];
   friends: Friend[];
+  followers: string[];
+  following: string[];
 }
+
 
 interface Post {
   id: string;
@@ -94,7 +97,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           if (response.ok) {
             const userData = await response.json();
+            if (userData?._id) {
+              userData.id = userData._id;
+            }
             setUser(userData);
+
             localStorage.setItem('user', JSON.stringify(userData));
             fetchUserPosts();
           } else {
@@ -128,6 +135,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
+      if (data.user?._id) {
+        data.user.id = data.user._id;
+      }
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
@@ -159,6 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
+      if (data.user?._id) {
+        data.user.id = data.user._id;
+      }
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
@@ -233,6 +246,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
+      if (data.user?._id) {
+        data.user.id = data.user._id;
+      }
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       toast.success('Profile updated successfully!');

@@ -125,14 +125,6 @@ function App() {
                   }
                 />
                 <Route
-                  path="/explore"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
                   path="/wow"
                   element={
                     <ProtectedRoute>

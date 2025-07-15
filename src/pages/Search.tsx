@@ -123,7 +123,7 @@ const Search: React.FC = () => {
             <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search for people, hashtags, or places..."
+              placeholder="Search people"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -131,7 +131,7 @@ const Search: React.FC = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-1 mb-6 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+          {/* <div className="flex space-x-1 mb-6 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('people')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'people'
@@ -162,7 +162,7 @@ const Search: React.FC = () => {
               <MapPin size={18} />
               <span>Places</span>
             </button>
-          </div>
+          </div> */}
 
           {/* Results */}
           <div className="space-y-4">
@@ -217,7 +217,7 @@ const Search: React.FC = () => {
               </div>
             )}
 
-            {activeTab === 'hashtags' && (
+            {/* {activeTab === 'hashtags' && (
               <div className="grid gap-4">
                 {mockHashtags.map((hashtag) => (
                   <div key={hashtag.tag} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
@@ -247,7 +247,7 @@ const Search: React.FC = () => {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

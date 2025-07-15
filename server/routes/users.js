@@ -20,16 +20,18 @@ router.post('/follow/:userId', auth, async (req, res) => {
 
     // Update User collection
     await User.findByIdAndUpdate(userId, {
-      $addToSet: { friends: targetUserId }
+      $addToSet: { following: targetUserId }
     });
+
     await User.findByIdAndUpdate(targetUserId, {
       $addToSet: { followers: userId }
     });
 
     // Update AllUser collection
     await AllUser.findOneAndUpdate({ userId }, {
-      $addToSet: { friends: targetUserId }
+      $addToSet: { following: targetUserId }
     });
+
     await AllUser.findOneAndUpdate({ userId: targetUserId }, {
       $addToSet: { followers: userId }
     });
@@ -53,16 +55,18 @@ router.post('/unfollow/:userId', auth, async (req, res) => {
 
     // Update User collection
     await User.findByIdAndUpdate(userId, {
-      $pull: { friends: targetUserId }
+      $pull: { following: targetUserId }
     });
+
     await User.findByIdAndUpdate(targetUserId, {
       $pull: { followers: userId }
     });
 
     // Update AllUser collection
     await AllUser.findOneAndUpdate({ userId }, {
-      $pull: { friends: targetUserId }
+      $pull: { following: targetUserId }
     });
+
     await AllUser.findOneAndUpdate({ userId: targetUserId }, {
       $pull: { followers: userId }
     });
