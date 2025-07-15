@@ -20,21 +20,20 @@ router.post('/follow/:userId', auth, async (req, res) => {
 
     // Update User collection
     await User.findByIdAndUpdate(userId, {
-      $addToSet: { following: targetUserId }
+      $addToSet: { following: targetUserId, friends: targetUserId }
     });
-
     await User.findByIdAndUpdate(targetUserId, {
-      $addToSet: { followers: userId }
+      $addToSet: { followers: userId, friends: userId }
     });
 
     // Update AllUser collection
     await AllUser.findOneAndUpdate({ userId }, {
-      $addToSet: { following: targetUserId }
+      $addToSet: { following: targetUserId, friends: targetUserId }
+    });
+    await AllUser.findOneAndUpdate({ userId: targetUserId }, {
+      $addToSet: { followers: userId, friends: userId }
     });
 
-    await AllUser.findOneAndUpdate({ userId: targetUserId }, {
-      $addToSet: { followers: userId }
-    });
 
     res.json({ message: 'Followed successfully' });
   } catch (error) {
@@ -55,21 +54,20 @@ router.post('/unfollow/:userId', auth, async (req, res) => {
 
     // Update User collection
     await User.findByIdAndUpdate(userId, {
-      $pull: { following: targetUserId }
+      $pull: { following: targetUserId, friends: targetUserId }
     });
-
     await User.findByIdAndUpdate(targetUserId, {
-      $pull: { followers: userId }
+      $pull: { followers: userId, friends: userId }
     });
 
     // Update AllUser collection
     await AllUser.findOneAndUpdate({ userId }, {
-      $pull: { following: targetUserId }
+      $pull: { following: targetUserId, friends: targetUserId }
+    });
+    await AllUser.findOneAndUpdate({ userId: targetUserId }, {
+      $pull: { followers: userId, friends: userId }
     });
 
-    await AllUser.findOneAndUpdate({ userId: targetUserId }, {
-      $pull: { followers: userId }
-    });
 
     res.json({ message: 'Unfollowed successfully' });
   } catch (error) {
@@ -121,7 +119,13 @@ router.put('/profile', [
       { new: true, runValidators: true }
     ).select('-password');
 
+    // Also update the AllUser collection
+    if (user) {
+      await AllUser.findOneAndUpdate({ userId: req.user._id }, updates);
+    }
+
     res.json({ message: 'Profile updated successfully', user });
+
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Username already exists' });

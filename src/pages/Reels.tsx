@@ -150,7 +150,7 @@ const Reels: React.FC = () => {
         </div>
 
         {/* Reel Container */}
-        <div className="relative h-screen flex items-center justify-center">
+        <div className="relative h-screen flex items-center justify-center md:pl-60">
           {/* Video Background */}
           <div className="relative w-full max-w-md h-full bg-black rounded-lg overflow-hidden">
             <img

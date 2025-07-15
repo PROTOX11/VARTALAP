@@ -33,7 +33,8 @@ interface Post {
 }
 
 interface Friend {
-  id: string;
+  _id: string;
+
   username: string;
   profilePicture: string;
   isOnline: boolean;

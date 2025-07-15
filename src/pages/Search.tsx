@@ -189,7 +189,7 @@ const Search: React.FC = () => {
                       <div key={person._id || person.userId} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <img
-                            src={person.profilePicture || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150'}
+                            src={person.profilePicture || 'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png'}
                             alt={person.username}
                             className="w-12 h-12 rounded-full object-cover"
                           />

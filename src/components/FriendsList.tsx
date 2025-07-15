@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface Friend {
-  id: string;
+  _id: string;
   username: string;
   profilePicture: string;
   isOnline: boolean;
@@ -16,7 +16,7 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends }) => {
   const navigate = useNavigate();
 
   const handleFriendClick = (friendId: string) => {
-    navigate(`/friend/${friendId}`);
+    navigate(`/profile/${friendId}`);
   };
 
   return (
@@ -25,8 +25,8 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends }) => {
       <div className="flex space-x-2 overflow-x-auto pb-2">
         {friends.map((friend) => (
           <button
-            key={friend.id}
-            onClick={() => handleFriendClick(friend.id)}
+            key={friend._id}
+            onClick={() => handleFriendClick(friend._id)}
             className="flex-shrink-0 relative hover:scale-105 transition-transform"
           >
             <img

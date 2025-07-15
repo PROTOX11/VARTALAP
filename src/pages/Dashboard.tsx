@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
       id: '1',
       user: {
         username: 'admin1234',
-        profilePicture: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
+        profilePicture: 'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png',
         location: 'sector-18 chandigarh'
       },
       image: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -41,26 +41,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  const mockFriends = [
-    {
-      id: '1',
-      username: 'alice',
-      profilePicture: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-      isOnline: true
-    },
-    {
-      id: '2',
-      username: 'bob',
-      profilePicture: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
-      isOnline: false
-    },
-    {
-      id: '3',
-      username: 'charlie',
-      profilePicture: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150',
-      isOnline: true
-    }
-  ];
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -96,7 +76,7 @@ const Dashboard: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 p-4 md:p-6 pb-20 md:pb-6">
           <div className="mb-4 md:mb-6">
-            <FriendsList friends={mockFriends} />
+            <FriendsList friends={user?.friends || []} />
           </div>
 
           <div className="space-y-4 md:space-y-6">
