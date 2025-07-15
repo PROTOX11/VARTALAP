@@ -8,8 +8,71 @@ const upload = require('../cloudinary');
 
 const router = express.Router();
 
+// Follow a user
+router.post('/follow/:userId', auth, async (req, res) => {
+  try {
+    const targetUserId = req.params.userId;
+    const userId = req.user._id;
 
+    if (userId.toString() === targetUserId) {
+      return res.status(400).json({ message: 'Cannot follow yourself' });
+    }
 
+    // Update User collection
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { friends: targetUserId }
+    });
+    await User.findByIdAndUpdate(targetUserId, {
+      $addToSet: { followers: userId }
+    });
+
+    // Update AllUser collection
+    await AllUser.findOneAndUpdate({ userId }, {
+      $addToSet: { friends: targetUserId }
+    });
+    await AllUser.findOneAndUpdate({ userId: targetUserId }, {
+      $addToSet: { followers: userId }
+    });
+
+    res.json({ message: 'Followed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while following user' });
+  }
+});
+
+// Unfollow a user
+router.post('/unfollow/:userId', auth, async (req, res) => {
+  try {
+    const targetUserId = req.params.userId;
+    const userId = req.user._id;
+
+    if (userId.toString() === targetUserId) {
+      return res.status(400).json({ message: 'Cannot unfollow yourself' });
+    }
+
+    // Update User collection
+    await User.findByIdAndUpdate(userId, {
+      $pull: { friends: targetUserId }
+    });
+    await User.findByIdAndUpdate(targetUserId, {
+      $pull: { followers: userId }
+    });
+
+    // Update AllUser collection
+    await AllUser.findOneAndUpdate({ userId }, {
+      $pull: { friends: targetUserId }
+    });
+    await AllUser.findOneAndUpdate({ userId: targetUserId }, {
+      $pull: { followers: userId }
+    });
+
+    res.json({ message: 'Unfollowed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while unfollowing user' });
+  }
+});
 
 // Get all users from AllUser collection (for search page)
 router.get('/all-users', auth, async (req, res) => {

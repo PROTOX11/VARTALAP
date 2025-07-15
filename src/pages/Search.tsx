@@ -5,6 +5,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
 import { User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext'; // Add this import
 
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,6 +13,7 @@ const Search: React.FC = () => {
   const [people, setPeople] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get current user
 
   useEffect(() => {
     if (activeTab === 'people') {
@@ -55,6 +57,37 @@ const Search: React.FC = () => {
     { name: 'Tokyo, Japan', posts: '2.9M' },
     { name: 'London, UK', posts: '4.1M' }
   ];
+
+  // Helper to check if current user is following a person
+  const isFollowing = (person: any) => {
+    return user && person.followers && person.followers.includes(user.id);
+  };
+
+  // Follow/unfollow handler
+  const handleFollowToggle = async (person: any) => {
+    const url = `/api/users/${isFollowing(person) ? 'unfollow' : 'follow'}/${person.userId || person._id}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    if (res.ok) {
+      // Update UI: refetch or update people state
+      setPeople(people =>
+        people.map(p =>
+          (p.userId || p._id) === (person.userId || person._id)
+            ? {
+                ...p,
+                followers: isFollowing(person)
+                  ? p.followers.filter((id: string) => id !== user.id)
+                  : [...(p.followers || []), user.id]
+              }
+            : p
+        )
+      );
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -157,10 +190,15 @@ const Search: React.FC = () => {
                         </div>
                         {/* Placeholder for follow button */}
                         <button
-                          className="px-6 py-2 rounded-lg font-medium transition-colors bg-purple-600 text-white hover:bg-purple-700"
-                          disabled
+                          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                            isFollowing(person)
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                              : 'bg-purple-600 text-white hover:bg-purple-700'
+                          }`}
+                          onClick={() => handleFollowToggle(person)}
+                          disabled={user && user.id === (person.userId || person._id)}
                         >
-                          Follow
+                          {isFollowing(person) ? 'Unfollow' : 'Follow'}
                         </button>
                       </div>
                     ))
