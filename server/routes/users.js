@@ -1,11 +1,26 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const AllUser = require('../models/AllUser');
 const Post = require('../models/Post');
 const auth = require('../middleware/auth');
 const upload = require('../cloudinary');
 
 const router = express.Router();
+
+
+
+
+// Get all users from AllUser collection (for search page)
+router.get('/all-users', auth, async (req, res) => {
+  try {
+    const users = await AllUser.find().select('-__v');
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while fetching all users' });
+  }
+});
 
 // Update Profile
 router.put('/profile', [

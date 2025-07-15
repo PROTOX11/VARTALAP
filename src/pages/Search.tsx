@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search as SearchIcon, Users, Hash, MapPin, MessageCircle } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
@@ -9,33 +9,38 @@ import { useNavigate } from 'react-router-dom';
 const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'people' | 'hashtags' | 'places'>('people');
+  const [people, setPeople] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const mockPeople = [
-    {
-      id: '1',
-      username: 'john_doe',
-      name: 'John Doe',
-      profilePicture: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
-      followers: '2.5k',
-      isFollowing: false
-    },
-    {
-      id: '2',
-      username: 'jane_smith',
-      name: 'Jane Smith',
-      profilePicture: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-      followers: '1.8k',
-      isFollowing: true
-    },
-    {
-      id: '3',
-      username: 'mike_wilson',
-      name: 'Mike Wilson',
-      profilePicture: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150',
-      followers: '892',
-      isFollowing: false
+
+  useEffect(() => {
+    if (activeTab === 'people') {
+      setLoading(true);
+      fetch('/api/users/all-users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+        .then(async res => {
+          if (!res.ok) {
+            const text = await res.text();
+            console.error('Failed to fetch users:', res.status, text);
+            setPeople([]);
+            setLoading(false);
+            return;
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (data) setPeople(data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('Fetch error:', err);
+          setLoading(false);
+        });
     }
-  ];
+  }, [activeTab]);
 
   const mockHashtags = [
     { tag: 'photography', posts: '1.2M' },
@@ -127,30 +132,39 @@ const Search: React.FC = () => {
           <div className="space-y-4">
             {activeTab === 'people' && (
               <div className="grid gap-4">
-                {mockPeople.map((person) => (
-                  <div key={person.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <img
-                        src={person.profilePicture}
-                        alt={person.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{person.name}</h3>
-                        <p className="text-gray-500 dark:text-gray-400">@{person.username}</p>
-                        <p className="text-sm text-gray-400 dark:text-gray-500">{person.followers} followers</p>
+                {loading ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400">Loading users...</div>
+                ) : people.length === 0 ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400">No users found.</div>
+                ) : (
+                  people
+                    .filter(person =>
+                      person.username.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((person) => (
+                      <div key={person._id || person.userId} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <img
+                            src={person.profilePicture || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150'}
+                            alt={person.username}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-white">{person.username}</h3>
+                            {/* Placeholder for followers count */}
+                            <p className="text-sm text-gray-400 dark:text-gray-500">Followers: <span className="italic">coming soon</span></p>
+                          </div>
+                        </div>
+                        {/* Placeholder for follow button */}
+                        <button
+                          className="px-6 py-2 rounded-lg font-medium transition-colors bg-purple-600 text-white hover:bg-purple-700"
+                          disabled
+                        >
+                          Follow
+                        </button>
                       </div>
-                    </div>
-                    <button
-                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${person.isFollowing
-                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                        : 'bg-purple-600 text-white hover:bg-purple-700'
-                        }`}
-                    >
-                      {person.isFollowing ? 'Following' : 'Follow'}
-                    </button>
-                  </div>
-                ))}
+                    ))
+                )}
               </div>
             )}
 
