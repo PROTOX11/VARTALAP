@@ -68,7 +68,8 @@ const Search: React.FC = () => {
     const url = `/api/users/${isFollowing(person) ? 'unfollow' : 'follow'}/${person.userId || person._id}`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: {
+      headers:
+      {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
@@ -80,8 +81,10 @@ const Search: React.FC = () => {
             ? {
                 ...p,
                 followers: isFollowing(person)
-                  ? p.followers.filter((id: string) => id !== user.id)
-                  : [...(p.followers || []), user.id]
+                  ? p.followers.filter((id: string) => user && id !== user.id)
+                  : user
+                    ? [...(p.followers || []), user.id]
+                    : p.followers || []
               }
             : p
         )
@@ -171,9 +174,17 @@ const Search: React.FC = () => {
                   <div className="text-center text-gray-500 dark:text-gray-400">No users found.</div>
                 ) : (
                   people
-                    .filter(person =>
-                      person.username.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
+                    .filter(person => {
+                      // Get all possible ids for the person and the logged-in user as strings
+                      const personIds = [person.userId, person._id, person.id].map(id => id?.toString());
+                      const loggedInIds = [user?.id, user?._id].map(id => id?.toString());
+                      // Exclude if any id matches
+                      const isSelf = loggedInIds.some(id => id && personIds.includes(id));
+                      return (
+                        !isSelf &&
+                        person.username.toLowerCase().includes(searchQuery.toLowerCase())
+                      );
+                    })
                     .map((person) => (
                       <div key={person._id || person.userId} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
                         <div className="flex items-center space-x-4">
@@ -196,7 +207,7 @@ const Search: React.FC = () => {
                               : 'bg-purple-600 text-white hover:bg-purple-700'
                           }`}
                           onClick={() => handleFollowToggle(person)}
-                          disabled={user && user.id === (person.userId || person._id)}
+                          disabled={!!(user && user.id === (person.userId || person._id))}
                         >
                           {isFollowing(person) ? 'Unfollow' : 'Follow'}
                         </button>

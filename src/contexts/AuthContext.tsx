@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 
 interface User {
   id: string;
+  _id?: string;
   username: string;
   email: string;
   phone: string;
