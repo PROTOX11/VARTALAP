@@ -105,7 +105,7 @@ const CreatePost: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}>
                   <Image size={20} />
-                  <span>Image Post</span>
+                  <span>Upload</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -113,6 +113,7 @@ const CreatePost: React.FC = () => {
                     className="hidden"
                   />
                 </label>
+                
               </div>
 
               {/* Content Input */}

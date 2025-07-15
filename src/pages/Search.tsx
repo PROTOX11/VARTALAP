@@ -186,8 +186,13 @@ const Search: React.FC = () => {
                       );
                     })
                     .map((person) => (
-                      <div key={person._id || person.userId} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+                      <div
+                        key={person._id || person.userId}
+                        className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                        onClick={() => navigate(`/friend/${person.userId || person._id}`)}
+                      >
                         <div className="flex items-center space-x-4">
+
                           <img
                             src={person.profilePicture || 'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png'}
                             alt={person.username}
@@ -206,7 +211,11 @@ const Search: React.FC = () => {
                               ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                               : 'bg-purple-600 text-white hover:bg-purple-700'
                           }`}
-                          onClick={() => handleFollowToggle(person)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFollowToggle(person);
+                          }}
+
                           disabled={!!(user && user.id === (person.userId || person._id))}
                         >
                           {isFollowing(person) ? 'Unfollow' : 'Follow'}

@@ -5,123 +5,72 @@ import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
 
-interface FriendData {
-  id: string;
-  username: string;
-  profilePicture: string;
-  coverPhoto?: string;
-  about: string;
-  isOnline: boolean;
-  lastSeen?: string;
-  posts: Array<{
-    id: string;
-    type: 'text' | 'image';
-    content?: string;
-    image?: string;
-    likes: number;
-    comments: number;
-    timestamp: string;
-  }>;
-  followers: number;
-  following: number;
-  isFriend: boolean;
-  friendRequestSent: boolean;
-}
+type FriendPost = any;
+type FriendUser = any;
 
 const FriendProfile: React.FC = () => {
   const navigate = useNavigate();
   const { friendId } = useParams();
   const { user } = useAuth();
-  const [friendData, setFriendData] = useState<FriendData | null>(null);
+  const [friendData, setFriendData] = useState<FriendUser | null>(null);
+  const [friendPosts, setFriendPosts] = useState<FriendPost[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock friend data - replace with API call
   useEffect(() => {
-    const mockFriendData: FriendData = {
-      id: friendId || '1',
-      username: 'alice_wonder',
-      profilePicture: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300',
-      coverPhoto: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      about: 'Travel enthusiast 🌍 | Photography lover 📸 | Coffee addict ☕',
-      isOnline: true,
-      posts: [
-        {
-          id: '1',
-          type: 'image',
-          content: 'Beautiful sunset at the beach! 🌅',
-          image: 'https://images.pexels.com/photos/416978/pexels-photo-416978.jpeg?auto=compress&cs=tinysrgb&w=400',
-          likes: 45,
-          comments: 12,
-          timestamp: '2 hours ago'
-        },
-        {
-          id: '2',
-          type: 'text',
-          content: 'Just finished reading an amazing book! Highly recommend "The Alchemist" by Paulo Coelho. Such an inspiring story about following your dreams. 📚✨',
-          likes: 23,
-          comments: 8,
-          timestamp: '1 day ago'
-        },
-        {
-          id: '3',
-          type: 'image',
-          content: 'Morning coffee and planning my next adventure ☕🗺️',
-          image: 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=400',
-          likes: 67,
-          comments: 15,
-          timestamp: '3 days ago'
-        },
-        {
-          id: '4',
-          type: 'image',
-          content: 'Hiking with friends! Nature therapy at its best 🥾🌲',
-          image: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=400',
-          likes: 89,
-          comments: 24,
-          timestamp: '1 week ago'
-        },
-        {
-          id: '5',
-          type: 'text',
-          content: 'Grateful for all the amazing people in my life. Sometimes it\'s the simple moments that bring the most joy. 💕',
-          likes: 156,
-          comments: 32,
-          timestamp: '1 week ago'
-        },
-        {
-          id: '6',
-          type: 'image',
-          content: 'Trying out a new recipe today! Homemade pasta 🍝',
-          image: 'https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=400',
-          likes: 34,
-          comments: 9,
-          timestamp: '2 weeks ago'
+    const fetchFriendData = async () => {
+      if (!friendId) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/users/profile/${friendId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setFriendData(data.user);
+          setFriendPosts(data.posts);
+        } else {
+          setFriendData(null);
         }
-      ],
-      followers: 1234,
-      following: 567,
-      isFriend: false,
-      friendRequestSent: false
+      } catch (error) {
+        console.error('Failed to fetch friend data:', error);
+        setFriendData(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      setFriendData(mockFriendData);
-      setLoading(false);
-    }, 1000);
+    fetchFriendData();
   }, [friendId]);
 
   const handleSendMessage = () => {
-    navigate(`/chat?user=${friendData?.id}`);
+    navigate(`/chat?user=${friendData?._id}`);
   };
 
-  const handleFollowToggle = () => {
-    if (friendData) {
-      setFriendData(prev => prev ? {
-        ...prev,
-        isFriend: !prev.isFriend,
-        friendRequestSent: !prev.isFriend ? true : false,
-        followers: prev.isFriend ? prev.followers - 1 : prev.followers + 1
-      } : null);
+  const isFollowing = user?.following?.includes(friendData?._id);
+
+  const handleFollowToggle = async () => {
+    if (!friendData?._id || !user?._id) return;
+
+    const url = `/api/users/${isFollowing ? 'unfollow' : 'follow'}/${friendData._id}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+
+    if (res.ok) {
+      // Optimistically update the friend's follower list for immediate UI feedback.
+      setFriendData((prev: FriendUser) => {
+        if (!prev) return null;
+        const newFollowers = isFollowing
+          ? prev.followers.filter((id: string) => id !== user._id)
+          : [...prev.followers, user._id];
+        return { ...prev, followers: newFollowers };
+      });
+      // This won't update the `isFollowing` state until page reload, as `user` context is not updated.
     }
   };
 
@@ -202,15 +151,15 @@ const FriendProfile: React.FC = () => {
               
               <div className="flex justify-center md:justify-start space-x-6 mb-4">
                 <div className="text-center">
-                  <div className="font-bold text-gray-900 dark:text-white">{friendData.posts.length}</div>
+                  <div className="font-bold text-gray-900 dark:text-white">{friendPosts.length}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Posts</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-gray-900 dark:text-white">{friendData.followers}</div>
+                  <div className="font-bold text-gray-900 dark:text-white">{friendData.followers?.length || 0}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Followers</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-gray-900 dark:text-white">{friendData.following}</div>
+                  <div className="font-bold text-gray-900 dark:text-white">{friendData.following?.length || 0}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Following</div>
                 </div>
               </div>
@@ -219,14 +168,14 @@ const FriendProfile: React.FC = () => {
                 <button
                   onClick={handleFollowToggle}
                   className={`flex items-center justify-center space-x-2 px-4 md:px-6 py-2 rounded-full font-medium transition-colors ${
-                    friendData.isFriend
+                    isFollowing
                       ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                       : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
                 >
-                  {friendData.isFriend ? <UserCheck size={16} /> : <UserPlus size={16} />}
+                  {isFollowing ? <UserCheck size={16} /> : <UserPlus size={16} />}
                   <span className="text-sm md:text-base">
-                    {friendData.isFriend ? 'Following' : friendData.friendRequestSent ? 'Requested' : 'Follow'}
+                    {isFollowing ? 'Following' : 'Follow'}
                   </span>
                 </button>
                 
@@ -266,16 +215,16 @@ const FriendProfile: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Grid size={20} className="text-purple-600 dark:text-purple-400" />
               <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
-                Posts ({friendData.posts.length})
+                Posts ({friendPosts.length})
               </h2>
             </div>
           </div>
 
           <div className="p-4 md:p-6">
-            {friendData.posts.length > 0 ? (
+            {friendPosts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {friendData.posts.map((post) => (
-                  <div key={post.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
+                {friendPosts.map((post) => (
+                  <div key={post._id} className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
                     {post.image && (
                       <img
                         src={post.image}
@@ -293,14 +242,14 @@ const FriendProfile: React.FC = () => {
                         <div className="flex items-center space-x-3">
                           <div className="flex items-center space-x-1">
                             <Heart size={14} />
-                            <span>{post.likes}</span>
+                            <span>{post.likes.length}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <MessageSquare size={14} />
-                            <span>{post.comments}</span>
+                            <span>{post.comments.length}</span>
                           </div>
                         </div>
-                        <span>{post.timestamp}</span>
+                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>

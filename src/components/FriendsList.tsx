@@ -16,7 +16,7 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends }) => {
   const navigate = useNavigate();
 
   const handleFriendClick = (friendId: string) => {
-    navigate(`/profile/${friendId}`);
+    navigate(`/friend/${friendId}`);
   };
 
   return (

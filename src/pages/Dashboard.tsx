@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import PostCard from '../components/PostCard';
 import FriendsList from '../components/FriendsList';
@@ -11,35 +11,36 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard: React.FC = () => {
   const { user, deletePost, toggleSavePost } = useAuth();
   const navigate = useNavigate();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockPosts = [
-    {
-      id: '1',
-      user: {
-        username: 'admin1234',
-        profilePicture: 'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png',
-        location: 'sector-18 chandigarh'
-      },
-      image: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=800',
-      likes: 42,
-      comments: 8,
-      timestamp: '2 hours ago',
-      isOwner: true
-    },
-    {
-      id: '2',
-      user: {
-        username: 'john_doe',
-        profilePicture: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150',
-        location: 'New York'
-      },
-      content: 'Beautiful sunset today! Nature never fails to amaze me. 🌅',
-      image: 'https://images.pexels.com/photos/416978/pexels-photo-416978.jpeg?auto=compress&cs=tinysrgb&w=800',
-      likes: 128,
-      comments: 23,
-      timestamp: '4 hours ago'
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/posts/feed', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPosts(data);
+        } else {
+          setPosts([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchPosts();
     }
-  ];
+  }, [user]);
+
 
 
   return (
@@ -80,14 +81,20 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-4 md:space-y-6">
-            {mockPosts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onDelete={deletePost}
-                onSave={toggleSavePost}
-              />
-            ))}
+            {loading ? (
+              <div className="text-center text-gray-500 dark:text-gray-400">Loading posts...</div>
+            ) : posts.length > 0 ? (
+              posts.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  onDelete={deletePost}
+                  onSave={toggleSavePost}
+                />
+              ))
+            ) : (
+              <div className="text-center text-gray-500 dark:text-gray-400">No posts in your feed yet.</div>
+            )}
           </div>
         </div>
 
