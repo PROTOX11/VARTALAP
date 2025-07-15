@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const AllUser = require('../models/AllUser');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -40,6 +41,21 @@ router.post('/register', [
     // Create new user
     const user = new User({ username, email, phone, password });
     await user.save();
+
+    // Create AllUser document
+    const allUser = new AllUser({
+      userId: user._id,
+      username: user.username,
+      profilePicture: user.profilePicture,
+      about: user.about,
+      isOnline: user.isOnline,
+      friends: user.friends,
+      coverPhoto: user.coverPhoto,
+      lastSeen: user.lastSeen,
+      followers: user.followers,
+      following: user.following
+    });
+    await allUser.save();
 
     // Generate token
     const token = generateToken(user._id);

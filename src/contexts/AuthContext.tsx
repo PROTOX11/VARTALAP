@@ -132,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', data.token);
       setUserPosts(data.user.posts || []);
       toast.success('Login successful!');
+      fetchUserPosts();
       return true;
     } catch (error) {
       console.error(error);

@@ -49,6 +49,19 @@ router.put('/profile', [
   }
 });
 
+// for all user
+router.get('/all', auth, async (req, res) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.user._id } })
+      .select('username profilePicture isOnline followers following');
+
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while fetching users' });
+  }
+});
+
 // Get User Profile
 router.get('/profile/:userId', auth, async (req, res) => {
   try {
