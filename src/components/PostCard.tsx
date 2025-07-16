@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Share, MoreHorizontal, Bookmark, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import CustomVideoPlayer from './CustomVideoPlayer';
 
 interface Post {
   id: string;
@@ -114,11 +115,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
       )}
 
       {post.video && (
-        <video
-          src={post.video}
-          controls
-          className="w-full h-64 md:h-96 object-contain bg-black"
-        />
+        <div className="w-full h-64 md:h-96 bg-black">
+          <CustomVideoPlayer src={post.video} />
+        </div>
       )}
 
       <div className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700">
