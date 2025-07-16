@@ -8,7 +8,7 @@ const postSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'reel'],
+    enum: ['text', 'image', 'video'],
     required: true
   },
   content: {

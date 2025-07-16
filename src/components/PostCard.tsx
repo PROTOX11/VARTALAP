@@ -11,6 +11,7 @@ interface Post {
   };
   content?: string;
   image?: string;
+  video?: string;
   likes: number;
   comments: number;
   timestamp: string;
@@ -112,6 +113,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
         />
       )}
 
+      {post.video && (
+        <video
+          src={post.video}
+          controls
+          className="w-full h-64 md:h-96 object-contain bg-black"
+        />
+      )}
+
       <div className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 md:space-x-6">
@@ -121,17 +130,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
                 liked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
               } hover:text-red-500 transition-colors`}
             >
-              <Heart size={18} md:size={20} fill={liked ? 'currentColor' : 'none'} />
+              <Heart size={20} fill={liked ? 'currentColor' : 'none'} />
               <span className="text-sm md:text-base">{likesCount}</span>
             </button>
             
             <button className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors">
-              <MessageCircle size={18} md:size={20} />
+              <MessageCircle size={20} />
               <span className="text-sm md:text-base">{post.comments}</span>
             </button>
             
             <button className="text-gray-500 dark:text-gray-400 hover:text-green-500 transition-colors">
-              <Share size={18} md:size={20} />
+              <Share size={20} />
             </button>
           </div>
           

@@ -14,32 +14,27 @@ const CreatePost: React.FC = () => {
   const [content, setContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        setSelectedVideo(null);
-        setPostType('image');
+        if (file.type.startsWith('image/')) {
+          setSelectedImage(e.target?.result as string);
+          setSelectedVideo(null);
+          setPostType('image');
+        } else if (file.type.startsWith('video/')) {
+          setSelectedVideo(e.target?.result as string);
+          setSelectedImage(null);
+          setPostType('video');
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedVideo(e.target?.result as string);
-        setSelectedImage(null);
-        setPostType('video');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,17 +42,20 @@ const CreatePost: React.FC = () => {
       return;
     }
 
+    setIsUploading(true);
     const success = await createPost({
       type: postType,
       content,
       image: selectedImage || undefined,
       video: selectedVideo || undefined,
     });
+    setIsUploading(false);
 
     if (success) {
       navigate('/dashboard');
     }
   };
+
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -116,7 +114,7 @@ const CreatePost: React.FC = () => {
                 </button>
                 
                 <label className={`flex items-center space-x-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
-                  postType === 'image'
+                  postType === 'image' || postType === 'video'
                     ? 'bg-purple-600 text-white border-purple-600'
                     : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}>
@@ -124,25 +122,12 @@ const CreatePost: React.FC = () => {
                   <span>Upload</span>
                   <input
                     type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
+                    accept="image/*,video/*"
+                    onChange={handleFileChange}
                     className="hidden"
                   />
                 </label>
-                <label className={`flex items-center space-x-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
-                  postType === 'video'
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}>
-                  <Image size={20} />
-                  <span>Upload Video</span>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    className="hidden"
-                  />
-                </label>
+
               </div>
 
               {/* Content Input */}
@@ -202,13 +187,16 @@ const CreatePost: React.FC = () => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={!content.trim() && !selectedImage && !selectedVideo}
-                  className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  disabled={(!content.trim() && !selectedImage && !selectedVideo) || isUploading}
+                  className={`flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                    isUploading ? 'border-4 border-purple-400 animate-pulse' : ''
+                  }`}
                 >
                   <Send size={20} />
-                  <span>Share Post</span>
+                  <span>{isUploading ? 'Uploading...' : 'Share Post'}</span>
                 </button>
               </div>
+
             </form>
           </div>
         </div>

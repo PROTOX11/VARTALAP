@@ -21,7 +21,7 @@ interface User {
 
 interface Post {
   id: string;
-  type: 'text' | 'image' | 'reel';
+  type: 'text' | 'image' | 'video';
   content?: string;
   image?: string;
   video?: string;
@@ -51,7 +51,7 @@ interface AuthContextType {
   deletePost: (postId: string) => void;
   toggleSavePost: (postId: string) => void;
   updateUsername: (newUsername: string) => Promise<boolean>;
-  createPost: (postData: { type: 'text' | 'image', content?: string, image?: string }) => Promise<boolean>;
+  createPost: (postData: { type: 'text' | 'image' | 'video', content?: string, image?: string, video?: string }) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -316,13 +316,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (postData.image && postData.image.startsWith('data:')) {
         const blob = dataURLtoBlob(postData.image);
-        if (blob) formData.append('image', blob, 'post.jpg');
+        if (blob) formData.append('media', blob, 'post.jpg');
+      } else if (postData.video && postData.video.startsWith('data:')) {
+        const blob = dataURLtoBlob(postData.video);
+        if (blob) formData.append('media', blob, 'post.mp4');
       }
 
-      if (postData.video && postData.video.startsWith('data:')) {
-        const blob = dataURLtoBlob(postData.video);
-        if (blob) formData.append('video', blob, 'post.mp4');
-      }
 
       const response = await fetch('http://localhost:5000/api/posts', {
         method: 'POST',

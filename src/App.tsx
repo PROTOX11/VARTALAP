@@ -12,7 +12,7 @@ import FriendProfile from './pages/FriendProfile';
 import CreatePost from './pages/CreatePost';
 import Search from './pages/Search';
 import Notifications from './pages/Notifications';
-import Reels from './pages/Reels';
+import Wows from './pages/Wows';
 import Chat from './pages/Chat';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -109,10 +109,10 @@ function App() {
                   }
                 />
                 <Route
-                  path="/reels"
+                  path="/Wows"
                   element={
                     <ProtectedRoute>
-                      <Reels />
+                      <Wows />
                     </ProtectedRoute>
                   }
                 />
@@ -128,7 +128,7 @@ function App() {
                   path="/wow"
                   element={
                     <ProtectedRoute>
-                      <Reels />
+                      <Wows />
                     </ProtectedRoute>
                   }
                 />

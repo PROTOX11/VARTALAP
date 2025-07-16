@@ -11,7 +11,9 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'VARTALAP',
+        folder: 'vartalap-wow',
+        resource_type: 'auto',
+
         format: async (req, file) => {
             // Determine format based on mimetype
             if (file.mimetype.startsWith('image/')) {
@@ -21,7 +23,11 @@ const storage = new CloudinaryStorage({
             }
             return 'png'; // default fallback
         },
-        public_id: (req, file) => 'computed-filename-using-request',
+        public_id: (req, file) => {
+            const originalName = file.originalname.split('.').slice(0, -1).join('.');
+            return `${originalName}-${Date.now()}`;
+        },
+
     },
 });
 

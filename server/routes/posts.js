@@ -8,17 +8,28 @@ const upload = require('../cloudinary');
 const router = express.Router();
 
 // Create Post
-router.post('/', [auth, upload.single('image')], [
-  body('type').isIn(['text', 'image', 'reel', 'video']),
+router.post('/', [auth, upload.single('media')], [
+  body('type').isIn(['text', 'image', 'Wow', 'video']),
   body('content').optional().trim()
 ], async (req, res) => {
   try {
+    if (req.file) {
+      const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/ico'];
+      const allowedVideoTypes = ['video/mp4', 'video/mkv'];
+      const { mimetype } = req.file;
+
+      if (!allowedImageTypes.includes(mimetype) && !allowedVideoTypes.includes(mimetype)) {
+        return res.status(400).json({ message: 'Invalid file type. Only images (jpg, jpeg, png, ico) and videos (mp4, mkv) are allowed.' });
+      }
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { type, content, location } = req.body;
+
 
     const postData = {
       user: req.user._id,

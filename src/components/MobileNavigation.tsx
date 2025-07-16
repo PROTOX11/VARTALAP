@@ -10,7 +10,7 @@ const MobileNavigation: React.FC = () => {
     { icon: Home, label: 'Home', path: '/dashboard' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Plus, label: 'Create', path: '/create' },
-    { icon: Zap, label: 'Wow', path: '/reels' },
+    { icon: Zap, label: 'Wow', path: '/Wows' },
     { icon: Bell, label: 'Notifications', path: '/notifications' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
