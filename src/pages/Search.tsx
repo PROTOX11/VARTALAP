@@ -79,13 +79,13 @@ const Search: React.FC = () => {
         people.map(p =>
           (p.userId || p._id) === (person.userId || person._id)
             ? {
-                ...p,
-                followers: isFollowing(person)
-                  ? p.followers.filter((id: string) => user && id !== user.id)
-                  : user
-                    ? [...(p.followers || []), user.id]
-                    : p.followers || []
-              }
+              ...p,
+              followers: isFollowing(person)
+                ? p.followers.filter((id: string) => user && id !== user.id)
+                : user
+                  ? [...(p.followers || []), user.id]
+                  : p.followers || []
+            }
             : p
         )
       );
@@ -102,9 +102,9 @@ const Search: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Search</h1>
             <div className='flex space-x-3'>
               <button
-              onClick={() => navigate('/chat')}
-              className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
-              <MessageCircle size={24} />
+                onClick={() => navigate('/chat')}
+                className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
+                <MessageCircle size={24} />
               </button>
               <ThemeToggle />
               <button
@@ -201,16 +201,15 @@ const Search: React.FC = () => {
                           <div>
                             <h3 className="font-semibold text-gray-900 dark:text-white">{person.username}</h3>
                             {/* Placeholder for followers count */}
-                            <p className="text-sm text-gray-400 dark:text-gray-500">Followers: <span className="italic">coming soon</span></p>
+                            <p className="text-sm text-gray-400 dark:text-gray-500">Followers: {person.followers.length}</p>
                           </div>
                         </div>
                         {/* Placeholder for follow button */}
                         <button
-                          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                            isFollowing(person)
+                          className={`px-6 py-2 rounded-lg font-medium transition-colors ${isFollowing(person)
                               ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                               : 'bg-purple-600 text-white hover:bg-purple-700'
-                          }`}
+                            }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleFollowToggle(person);

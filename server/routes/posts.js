@@ -9,7 +9,7 @@ const router = express.Router();
 
 // Create Post
 router.post('/', [auth, upload.single('image')], [
-  body('type').isIn(['text', 'image', 'reel']),
+  body('type').isIn(['text', 'image', 'reel', 'video']),
   body('content').optional().trim()
 ], async (req, res) => {
   try {
@@ -28,7 +28,11 @@ router.post('/', [auth, upload.single('image')], [
     };
 
     if (req.file) {
-      postData.image = req.file.path;
+      if (type === 'video') {
+        postData.video = req.file.path;
+      } else {
+        postData.image = req.file.path;
+      }
     }
 
     const post = new Post(postData);

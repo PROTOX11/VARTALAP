@@ -12,7 +12,15 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'VARTALAP',
-        format: async (req, file) => 'png', // supports promises as well
+        format: async (req, file) => {
+            // Determine format based on mimetype
+            if (file.mimetype.startsWith('image/')) {
+                return 'png';
+            } else if (file.mimetype.startsWith('video/')) {
+                return 'mp4';
+            }
+            return 'png'; // default fallback
+        },
         public_id: (req, file) => 'computed-filename-using-request',
     },
 });

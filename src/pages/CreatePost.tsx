@@ -10,9 +10,10 @@ import { User } from 'lucide-react';
 const CreatePost: React.FC = () => {
   const navigate = useNavigate();
   const { user, createPost } = useAuth();
-  const [postType, setPostType] = useState<'text' | 'image'>('text');
+  const [postType, setPostType] = useState<'text' | 'image' | 'video'>('text');
   const [content, setContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -20,7 +21,21 @@ const CreatePost: React.FC = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
+        setSelectedVideo(null);
         setPostType('image');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedVideo(e.target?.result as string);
+        setSelectedImage(null);
+        setPostType('video');
       };
       reader.readAsDataURL(file);
     }
@@ -28,7 +43,7 @@ const CreatePost: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() && !selectedImage) {
+    if (!content.trim() && !selectedImage && !selectedVideo) {
       return;
     }
 
@@ -36,6 +51,7 @@ const CreatePost: React.FC = () => {
       type: postType,
       content,
       image: selectedImage || undefined,
+      video: selectedVideo || undefined,
     });
 
     if (success) {
@@ -113,7 +129,20 @@ const CreatePost: React.FC = () => {
                     className="hidden"
                   />
                 </label>
-                
+                <label className={`flex items-center space-x-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+                  postType === 'video'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}>
+                  <Image size={20} />
+                  <span>Upload Video</span>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
 
               {/* Content Input */}
@@ -148,11 +177,32 @@ const CreatePost: React.FC = () => {
                 </div>
               )}
 
+              {/* Video Preview */}
+              {selectedVideo && (
+                <div className="relative">
+                  <video
+                    src={selectedVideo}
+                    controls
+                    className="w-full max-h-96 rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedVideo(null);
+                      setPostType('text');
+                    }}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
               {/* Submit Button */}
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={!content.trim() && !selectedImage}
+                  disabled={!content.trim() && !selectedImage && !selectedVideo}
                   className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Send size={20} />
