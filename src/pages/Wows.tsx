@@ -151,6 +151,7 @@ const Wows: React.FC = () => {
         <div className="relative h-screen flex items-center justify-center md:pl-60">
           {/* Video Background */}
           <div className="relative w-full max-w-md h-full bg-black rounded-lg overflow-hidden">
+<<<<<<< HEAD
             {/* Video element */}
             {currentWowData.video && (
               <video
@@ -165,6 +166,15 @@ const Wows: React.FC = () => {
               />
             )}
             {/* Video Overlay */}
+=======
+            <img
+              src={currentWowData.thumbnail}
+              alt="Wow thumbnail"
+              className="w-full h-full object-cover"
+            />
+            
+            {/* Video Overlay (In a real app, this would be an actual video) */}
+>>>>>>> parent of 53f01c1 (..)
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
               <button
                 onClick={togglePlayPause}

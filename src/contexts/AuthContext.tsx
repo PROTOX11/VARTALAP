@@ -87,18 +87,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok) {
         const data = await res.json();
         const posts = Array.isArray(data) ? data : data.posts;
-        // Map _id to id for React keys
-        const mappedPosts = posts.map((post: any) => ({
-          ...post,
-          id: post._id,
-        }));
-        setUserPosts(mappedPosts || []);
+        setUserPosts(posts || []);
       }
     } catch (err) {
       console.error('Failed to load user posts:', err);
     }
   };
-
 
   useEffect(() => {
     const fetchUser = async () => {

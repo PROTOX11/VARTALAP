@@ -42,6 +42,7 @@ const Dashboard: React.FC = () => {
   }, [user]);
 
 
+
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
