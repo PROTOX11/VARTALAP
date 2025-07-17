@@ -155,14 +155,14 @@ const Profile: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4">
+              {/* <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4">
                 <button className="px-4 md:px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                   Update profile
                 </button>
                 <button className="px-4 md:px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                   Share profile
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

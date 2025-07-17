@@ -153,11 +153,7 @@ const Wows: React.FC = () => {
         <div className="relative h-screen flex items-center justify-center md:pl-60">
           {/* Video Background */}
           <div className="relative w-full max-w-md h-full bg-black rounded-lg overflow-hidden">
-            <img
-              src={currentWowData.thumbnail}
-              alt="Wow thumbnail"
-              className="w-full h-full object-cover"
-            />
+            {/* wow video */}
             
             {/* Video Overlay (In a real app, this would be an actual video) */}
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
