@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Play, Pause, Volume2, VolumeX, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -26,53 +26,45 @@ const Wows: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [Wows, setWows] = useState<Wow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockWows: Wow[] = [
-    {
-      id: '1',
-      user: {
-        username: 'travel_enthusiast',
-        profilePicture: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150'
-      },
-      video: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-      thumbnail: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=400',
-      caption: 'Beautiful sunset at the temple 🌅 #travel #sunset #temple',
-      likes: 1234,
-      comments: 89,
-      shares: 45,
-      isLiked: false
-    },
-    {
-      id: '2',
-      user: {
-        username: 'foodie_adventures',
-        profilePicture: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150'
-      },
-      video: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4',
-      thumbnail: 'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=400',
-      caption: 'Making the perfect pasta 🍝 #cooking #food #recipe',
-      likes: 892,
-      comments: 67,
-      shares: 23,
-      isLiked: true
-    },
-    {
-      id: '3',
-      user: {
-        username: 'fitness_guru',
-        profilePicture: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150'
-      },
-      video: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-      thumbnail: 'https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&cs=tinysrgb&w=400',
-      caption: 'Morning workout routine 💪 #fitness #workout #motivation',
-      likes: 2156,
-      comments: 134,
-      shares: 78,
-      isLiked: false
-    }
-  ];
+  useEffect(() => {
+    const fetchVideos = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/posts/all-videos');
+        if (res.ok) {
+          const data = await res.json();
+          setWows(
+            data.map((post: any) => ({
+              id: post._id,
+              user: {
+                username: post.user?.username || 'Unknown',
+                profilePicture: post.user?.profilePicture || '',
+              },
+              video: post.video,
+              thumbnail: '',
+              caption: post.content,
+              likes: post.likes?.length || 0,
+              comments: post.comments?.length || 0,
+              shares: post.shares?.length || 0,
+              isLiked: false,
+            }))
+          );
+        } else {
+          setWows([]);
+        }
+      } catch (error) {
+        setWows([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, []);
 
-  const [Wows, setWows] = useState(mockWows);
+  const currentWowData = Wows[currentWow] || {};
 
   const togglePlayPause = () => {
     if (videoRef.current) {
@@ -114,7 +106,13 @@ const Wows: React.FC = () => {
     }
   };
 
-  const currentWowData = Wows[currentWow];
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-black items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-black">
@@ -153,9 +151,20 @@ const Wows: React.FC = () => {
         <div className="relative h-screen flex items-center justify-center md:pl-60">
           {/* Video Background */}
           <div className="relative w-full max-w-md h-full bg-black rounded-lg overflow-hidden">
-            {/* wow video */}
-            
-            {/* Video Overlay (In a real app, this would be an actual video) */}
+            {/* Video element */}
+            {currentWowData.video && (
+              <video
+                ref={videoRef}
+                src={currentWowData.video}
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted={isMuted}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+            )}
+            {/* Video Overlay */}
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
               <button
                 onClick={togglePlayPause}
@@ -189,12 +198,12 @@ const Wows: React.FC = () => {
                 <div className="flex-1 mr-4">
                   <div className="flex items-center space-x-3 mb-2">
                     <img
-                      src={currentWowData.user.profilePicture}
-                      alt={currentWowData.user.username}
+                      src={currentWowData.user?.profilePicture}
+                      alt={currentWowData.user?.username}
                       className="w-8 h-8 rounded-full object-cover border-2 border-white"
                     />
                     <span className="text-white font-semibold">
-                      {currentWowData.user.username}
+                      {currentWowData.user?.username}
                     </span>
                     <button className="px-3 py-1 bg-purple-600 text-white text-sm rounded-full">
                       Follow

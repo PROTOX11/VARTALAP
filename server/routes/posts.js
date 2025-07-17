@@ -227,4 +227,16 @@ router.post('/:postId/save', auth, async (req, res) => {
   }
 });
 
+// Get all videos
+router.get('/all-videos', async (req, res) => {
+  try {
+    const posts = await Post.find({ video: { $exists: true, $ne: '' } })
+      .populate('user', 'username profilePicture')
+      .sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
