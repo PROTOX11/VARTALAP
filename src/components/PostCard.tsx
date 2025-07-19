@@ -13,8 +13,8 @@ interface Post {
   content?: string;
   image?: string;
   video?: string;
-  likes: number;
-  comments: number;
+  likes: number | string[];
+  comments: number | string[];
   timestamp: string;
   isLiked?: boolean;
   isSaved?: boolean;
@@ -30,7 +30,14 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   const [liked, setLiked] = useState(post.isLiked || false);
   const [saved, setSaved] = useState(post.isSaved || false);
-  const [likesCount, setLikesCount] = useState(post.likes);
+  const [likesCount, setLikesCount] = useState(() => {
+    if (typeof post.likes === 'number') return post.likes;
+    if (Array.isArray(post.likes)) return post.likes.length;
+    return 0;
+  });
+  let commentsCount = 0;
+  if (typeof post.comments === 'number') commentsCount = post.comments;
+  else if (Array.isArray(post.comments)) commentsCount = post.comments.length;
   const [showMenu, setShowMenu] = useState(false);
   const { user } = useAuth();
 
@@ -100,13 +107,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
         </div>
       </div>
 
-      {post.content && (
+      {typeof post.content === 'string' && post.content && (
         <div className="px-3 md:px-4 pb-3">
           <p className="text-sm md:text-base text-gray-900 dark:text-white">{post.content}</p>
         </div>
       )}
 
-      {post.image && (
+      {typeof post.image === 'string' && post.image && (
         <img
           src={post.image}
           alt="Post content"
@@ -114,7 +121,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
         />
       )}
 
-      {post.video && (
+      {typeof post.video === 'string' && post.video && (
         <div className="w-full h-64 md:h-96 bg-black">
           <CustomVideoPlayer src={post.video} />
         </div>
@@ -135,7 +142,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
             
             <button className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors">
               <MessageCircle size={20} />
-              <span className="text-sm md:text-base">{post.comments}</span>
+        <span className="text-sm md:text-base">{commentsCount}</span>
             </button>
             
             <button className="text-gray-500 dark:text-gray-400 hover:text-green-500 transition-colors">
@@ -144,7 +151,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
           </div>
           
           <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-            {post.timestamp}
+            {typeof post.timestamp === 'string' ? post.timestamp : ''}
           </span>
         </div>
       </div>
