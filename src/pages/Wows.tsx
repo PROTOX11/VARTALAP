@@ -147,7 +147,7 @@ const Wows: React.FC = () => {
         );
         setWows(prevWows =>
           prevWows.map(wow => {
-            if ((wow.user.userId || wow.user._id || wow.user.id) === personId) {
+            if ((wow.user.userId || wow.user._id) === personId) {
               return {
                 ...wow,
                 user: {
@@ -271,7 +271,23 @@ const Wows: React.FC = () => {
       const { scrollTop, clientHeight } = scrollContainerRef.current;
       const newIndex = Math.round(scrollTop / clientHeight);
       if (newIndex !== currentWow) {
+        // Pause and mute all videos except the new one
+        videoRefs.current.forEach((video, idx) => {
+          if (video) {
+            video.pause();
+            video.currentTime = 0;
+            video.muted = true;
+          }
+        });
+        // Play and unmute the new video if available
+        const newVideo = videoRefs.current[newIndex];
+        if (newVideo) {
+          newVideo.muted = false;
+          newVideo.play().catch(() => { });
+        }
         setCurrentWow(newIndex);
+        setIsPlaying(true); // Set playing state for the new video
+        setIsMuted(false); // Unmute the new video by default
       }
     }
   }, [currentWow]);
@@ -422,10 +438,10 @@ const Wows: React.FC = () => {
                     loop
                     onClick={togglePlayPause}
                     onPlay={() => {
-                        if (index === currentWow) setIsPlaying(true);
+                      if (index === currentWow) setIsPlaying(true);
                     }}
                     onPause={() => {
-                        if (index === currentWow) setIsPlaying(false);
+                      if (index === currentWow) setIsPlaying(false);
                     }}
                   />
                 )}
@@ -515,25 +531,6 @@ const Wows: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Wow Indicators (still outside the scrollable area) */}
-        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-2 z-30">
-          {wows.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (scrollContainerRef.current) {
-                  scrollContainerRef.current.scrollTo({
-                    top: index * scrollContainerRef.current.clientHeight,
-                    behavior: 'smooth'
-                  });
-                }
-              }}
-              className={`w-2 h-8 rounded-full transition-colors ${index === currentWow ? 'bg-white' : 'bg-white/30'
-                }`}
-            />
           ))}
         </div>
       </div>
