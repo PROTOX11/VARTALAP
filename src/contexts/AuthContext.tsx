@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || 'Login failed. Please try again.');
+        toast.error(data.messages|| 'Login failed. Please try again.');
         return false;
       }
 
@@ -174,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || 'Signup failed. Please try again.');
+        toast.error(data.messages|| 'Signup failed. Please try again.');
         return false;
       }
 
@@ -251,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || 'Profile update failed.');
+        toast.error(data.messages|| 'Profile update failed.');
         return false;
       }
 
@@ -342,7 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || 'Failed to create post.');
+        toast.error(data.messages|| 'Failed to create post.');
         return false;
       }
 

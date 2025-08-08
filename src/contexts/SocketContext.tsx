@@ -1,33 +1,71 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-interface Message {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  timestamp: Date;
-  isRead: boolean;
-}
-
-interface Chat {
-  id: string;
-  participants: string[];
-  lastMessage?: Message;
-  unreadCount: number;
-}
-
-interface SocketContextType {
+const SocketContext = createContext<{
   socket: Socket | null;
-  messages: Message[];
-  chats: Chat[];
-  sendMessage: (receiverId: string, content: string) => void;
-  markAsRead: (chatId: string) => void;
+  sendMessage: (receiverId: string, chatId: string, message: string) => void;
   isConnected: boolean;
-}
+}>({
+  socket: null,
+  sendMessage: () => {},
+  isConnected: false,
+});
 
-const SocketContext = createContext<SocketContextType | undefined>(undefined);
+export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    if (user && user._id && typeof user._id === 'string' && user._id.length === 24) {
+      socketRef.current = io('http://localhost:5000', {
+        transports: ['websocket', 'polling'],
+      });
+
+      socketRef.current.on('connect', () => {
+        console.log('Socket connected:', user._id);
+        setIsConnected(true);
+        socketRef.current?.emit('join', user._id); // Emit join event with userId
+      });
+
+      socketRef.current.on('connect_error', (error) => {
+        console.error('Socket connection error:', error.message);
+        setIsConnected(false);
+      });
+
+      socketRef.current.on('disconnect', () => {
+        console.log('Socket disconnected:', user._id);
+        setIsConnected(false);
+      });
+
+      return () => {
+        socketRef.current?.disconnect();
+        setIsConnected(false);
+      };
+    } else {
+      console.warn('No valid user._id for socket connection:', user);
+    }
+  }, [user, user?._id]);
+
+  const sendMessage = (receiverId: string, chatId: string, message: string) => {
+    if (socketRef.current && receiverId && chatId && message) {
+      socketRef.current.emit('sendMessage', {
+        receiverId,
+        chatId,
+        message,
+      });
+    } else {
+      console.error('Cannot send message: Missing socket or parameters', { receiverId, chatId, message });
+    }
+  };
+
+  return (
+    <SocketContext.Provider value={{ socket: socketRef.current, sendMessage, isConnected }}>
+      {children}
+    </SocketContext.Provider>
+  );
+};
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
@@ -35,88 +73,4 @@ export const useSocket = () => {
     throw new Error('useSocket must be used within a SocketProvider');
   }
   return context;
-};
-
-export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      // In a real app, you would connect to your actual socket server
-      // For demo purposes, we'll simulate socket connection
-      const mockSocket = {
-        emit: () => {},
-        on: () => {},
-        disconnect: () => {},
-      } as any;
-
-      setSocket(mockSocket);
-      setIsConnected(true);
-
-      // Mock chat data
-      setChats([
-        {
-          id: '1',
-          participants: [user.id, '1'],
-          lastMessage: {
-            id: '1',
-            senderId: '1',
-            receiverId: user.id,
-            content: 'Hey! How are you doing?',
-            timestamp: new Date(),
-            isRead: false
-          },
-          unreadCount: 1
-        }
-      ]);
-
-      return () => {
-        mockSocket.disconnect();
-        setIsConnected(false);
-      };
-    }
-  }, [user]);
-
-  const sendMessage = (receiverId: string, content: string) => {
-    if (socket && user) {
-      const message: Message = {
-        id: Date.now().toString(),
-        senderId: user.id,
-        receiverId,
-        content,
-        timestamp: new Date(),
-        isRead: false
-      };
-
-      setMessages(prev => [...prev, message]);
-      // In real app: socket.emit('sendMessage', message);
-    }
-  };
-
-  const markAsRead = (chatId: string) => {
-    setChats(prev => 
-      prev.map(chat => 
-        chat.id === chatId 
-          ? { ...chat, unreadCount: 0 }
-          : chat
-      )
-    );
-  };
-
-  return (
-    <SocketContext.Provider value={{
-      socket,
-      messages,
-      chats,
-      sendMessage,
-      markAsRead,
-      isConnected
-    }}>
-      {children}
-    </SocketContext.Provider>
-  );
 };

@@ -30,7 +30,9 @@ const Wows: React.FC = () => {
   const [currentWow, setCurrentWow] = useState(0); // Still useful for indicators and data fetching
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [showPlayIcon, setShowPlayIcon] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]); // Array of refs for each video
+
   const scrollContainerRef = useRef<HTMLDivElement>(null); // Ref for the main scrollable container
 
   const [wows, setWows] = useState<Wow[]>([]);
@@ -176,33 +178,27 @@ const Wows: React.FC = () => {
   const currentVideoRef = videoRefs.current[currentWow];
 
   const togglePlayPause = () => {
-    console.log("Video tapped! Toggling play/pause...");
     if (currentVideoRef) {
       if (isPlaying) {
         currentVideoRef.pause();
-        console.log("Video paused.");
+        setShowPlayIcon(true);
       } else {
         currentVideoRef.play().catch(error => {
           console.warn("Video autoplay prevented:", error);
           setIsPlaying(false);
         });
-        console.log("Video playing.");
+        setShowPlayIcon(false);
       }
       setIsPlaying(!isPlaying);
-    } else {
-      console.log("Current Video ref is null, cannot play/pause.");
     }
   };
 
+
   const toggleMute = () => {
-    console.log("Mute button tapped! Toggling mute...");
     if (currentVideoRef) {
       const newMutedState = !currentVideoRef.muted;
       currentVideoRef.muted = newMutedState;
       setIsMuted(newMutedState);
-      console.log(`Video muted state changed to: ${newMutedState}`);
-    } else {
-      console.log("Current Video ref is null, cannot mute.");
     }
   };
 
@@ -264,109 +260,69 @@ const Wows: React.FC = () => {
     }
   };
 
-  // Instead of explicitly controlling scroll, we'll let native scroll with snap handle it
-  // This function will now update `currentWow` based on scroll position
-  const handleScrollEvent = useCallback(() => {
-    if (scrollContainerRef.current) {
-      const { scrollTop, clientHeight } = scrollContainerRef.current;
-      const newIndex = Math.round(scrollTop / clientHeight);
-      if (newIndex !== currentWow) {
-        // Pause and mute all videos except the new one
-        videoRefs.current.forEach((video, idx) => {
-          if (video) {
-            video.pause();
-            video.currentTime = 0;
-            video.muted = true;
-          }
-        });
-        // Play and unmute the new video if available
-        const newVideo = videoRefs.current[newIndex];
-        if (newVideo) {
-          newVideo.muted = false;
-          newVideo.play().catch(() => { });
-        }
-        setCurrentWow(newIndex);
-        setIsPlaying(true); // Set playing state for the new video
-        setIsMuted(false); // Unmute the new video by default
-      }
-    }
-  }, [currentWow]);
-
-  // Effect for video playback and mute state synchronization
   useEffect(() => {
-    // Pause all videos first
+    const currentVideo = videoRefs.current[currentWow];
+
+    console.log(`[DEBUG] currentWow: ${currentWow}, isPlaying: ${isPlaying}, isMuted: ${isMuted}`);
+
     videoRefs.current.forEach((video, index) => {
       if (video && index !== currentWow) {
         video.pause();
+        video.currentTime = 0;
+        video.muted = true; // Mute all non-current videos to prevent audio leak
       }
     });
 
-    // Play/manage current video
-    if (currentVideoRef) {
-      console.log(`useEffect: Current video wow changed to index ${currentWow}`);
-      console.log(`useEffect: Initializing mute state from videoRef.current.muted (${currentVideoRef.muted})`);
-      setIsMuted(currentVideoRef.muted);
+    if (currentVideo) {
+      currentVideo.muted = isMuted;
 
       if (isPlaying) {
-        console.log("useEffect: Attempting to play video.");
-        currentVideoRef.play().catch(error => {
-          console.warn("useEffect: Video autoplay prevented for new wow:", error);
-          setIsPlaying(false);
-          setIsMuted(currentVideoRef.muted);
-        });
+        setTimeout(() => {
+          currentVideo.play().catch(error => {
+            console.warn("useEffect: Video autoplay prevented:", error);
+            setIsPlaying(false);
+          });
+        }, 100); // small delay to ensure video is ready
       } else {
-        console.log("useEffect: Pausing video.");
-        currentVideoRef.pause();
+        currentVideo.pause();
       }
     }
-  }, [currentWow, isPlaying, wows.length, currentVideoRef]); // Added wows.length to ensure re-run on data load
+  }, [currentWow, isPlaying, isMuted, wows.length]);
 
-  // Dedicated useEffect for mute state synchronization
-  useEffect(() => {
-    if (currentVideoRef) {
-      console.log(`useEffect: isMuted state changed to ${isMuted}. Setting video muted property.`);
-      currentVideoRef.muted = isMuted;
-    }
-  }, [isMuted, currentVideoRef]); // Added currentVideoRef to ensure it applies to the active video
-
-  // Keyboard Navigation (Up/Down Arrow Keys)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (scrollContainerRef.current) {
-        const { scrollTop, clientHeight } = scrollContainerRef.current;
-        if (event.key === 'ArrowUp') {
-          event.preventDefault(); // Prevent default browser scroll
-          scrollContainerRef.current.scrollTo({
-            top: scrollTop - clientHeight,
-            behavior: 'smooth'
-          });
-        } else if (event.key === 'ArrowDown') {
-          event.preventDefault(); // Prevent default browser scroll
-          scrollContainerRef.current.scrollTo({
-            top: scrollTop + clientHeight,
-            behavior: 'smooth'
-          });
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []); // No dependencies needed as it directly controls scroll ref
-
-  // Attaches scroll listener to the container
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScrollEvent);
-      return () => {
-        container.removeEventListener('scroll', handleScrollEvent);
-      };
-    }
-  }, [handleScrollEvent]);
+    if (!container) return;
 
+    const videoElements = Array.from(container.querySelectorAll('div.snap-start'));
+
+    const observerOptions = {
+      root: container,
+      rootMargin: '0px',
+      threshold: 0.75, // 75% of the video container should be visible
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = videoElements.indexOf(entry.target as HTMLElement);
+          if (index !== -1) {
+            setCurrentWow(index);
+            setIsPlaying(true);
+            setIsMuted(false);
+            setShowPlayIcon(false);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    videoElements.forEach(el => observer.observe(el));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [wows.length]); // Re-run when the number of wows changes
 
   if (loading) {
     return (
@@ -386,13 +342,11 @@ const Wows: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-black">
-      {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
-      <div className="flex-1 relative overflow-hidden"> {/* Changed to overflow-hidden here */}
-        {/* Mobile Header */}
+      <div className="flex-1 relative overflow-hidden">
         <div className="md:hidden absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-4 flex items-center justify-between">
           <button
             onClick={() => navigate('/dashboard')}
@@ -404,7 +358,6 @@ const Wows: React.FC = () => {
           <ThemeToggle />
         </div>
 
-        {/* Desktop Header */}
         <div className="hidden md:block absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">Wows</h1>
@@ -417,28 +370,28 @@ const Wows: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Scrollable Wow Container */}
-        {/* The 'snap-y' and 'snap-mandatory' classes are for smooth scrolling/snapping */}
         <div
           ref={scrollContainerRef}
-          className="relative h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth md:pl-60"
+          className="relative h-[calc(100svh-56px)] md:h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth md:pl-60"
         >
           {wows.map((wowItem, index) => (
             <div
               key={wowItem.id}
-              className="relative h-screen flex items-center justify-center snap-start" // snap-start makes it snap to top
+              className="relative h-full flex items-center justify-center snap-start"
             >
               <div className="relative w-full max-w-md h-full bg-black rounded-lg overflow-hidden">
                 {wowItem.video && (
                   <video
-                    ref={el => videoRefs.current[index] = el} // Assign ref dynamically
+                    ref={el => videoRefs.current[index] = el}
                     src={wowItem.video}
-                    className="w-full h-full object-cover"
-                    autoPlay={index === currentWow && isPlaying} // Only autoPlay if it's the current active video
+                    className="w-full h-full object-contain"
                     loop
                     onClick={togglePlayPause}
                     onPlay={() => {
-                      if (index === currentWow) setIsPlaying(true);
+                      if (index === currentWow) {
+                        setIsPlaying(true);
+                        setShowPlayIcon(false);
+                      }
                     }}
                     onPause={() => {
                       if (index === currentWow) setIsPlaying(false);
@@ -446,16 +399,14 @@ const Wows: React.FC = () => {
                   />
                 )}
 
-                {/* Play/Pause overlay icon */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  {index === currentWow && !isPlaying && ( // Only show for current wow
+                  {index === currentWow && !isPlaying && showPlayIcon && (
                     <div className="p-4 bg-black/50 rounded-full backdrop-blur-sm">
                       <Play size={40} className="text-white" />
                     </div>
                   )}
                 </div>
 
-                {/* Controls (Mute button) */}
                 <div className="absolute top-4 right-4 flex flex-col space-y-2">
                   <button
                     onClick={toggleMute}
@@ -469,7 +420,6 @@ const Wows: React.FC = () => {
                   </button>
                 </div>
 
-                {/* User Info and Actions */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                   <div className="flex items-end justify-between">
                     <div className="flex-1 mr-4">

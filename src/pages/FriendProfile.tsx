@@ -46,7 +46,7 @@ const FriendProfile: React.FC = () => {
     fetchFriendData();
   }, [friendId]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage= () => {
     navigate(`/chat?user=${friendData?._id}`);
   };
 

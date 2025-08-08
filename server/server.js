@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const socketIo = require('socket.io');
-require('dotenv').config();
+const Chat = require('./models/Chat');
+const Message = require('./models/Message');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/message', require('./routes/messages'));
 
 // Socket.io connection handling
 const connectedUsers = new Map();
@@ -34,33 +36,75 @@ io.on('connection', (socket) => {
 
   // User joins
   socket.on('join', (userId) => {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return socket.disconnect(); // Kick unauthenticated users
+    }
     connectedUsers.set(userId, socket.id);
     socket.userId = userId;
-    
-    // Notify friends that user is online
     socket.broadcast.emit('userOnline', userId);
   });
 
-  // Handle private messages
-  socket.on('sendMessage', (data) => {
-    const { receiverId, message, chatId } = data;
-    const receiverSocketId = connectedUsers.get(receiverId);
-    
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('receiveMessage', {
-        senderId: socket.userId,
-        message,
+  // Send message
+  socket.on('sendMessage', async ({ receiverId, message, chatId }) => {
+    try {
+      // Validate inputs
+      if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
+        return socket.emit('error', { message: 'Invalid chatId' });
+      }
+      if (!receiverId || !mongoose.Types.ObjectId.isValid(receiverId)) {
+        return socket.emit('error', { message: 'Invalid receiverId' });
+      }
+      if (!message || typeof message !== 'string' || !message.trim()) {
+        return socket.emit('error', { message: 'Message content is required' });
+      }
+      if (!socket.userId || !mongoose.Types.ObjectId.isValid(socket.userId)) {
+        return socket.emit('error', { message: 'Invalid sender' });
+      }
+
+      // Verify chat exists and user is a participant
+      const chat = await Chat.findById(chatId);
+      if (!chat || !chat.participants.includes(socket.userId)) {
+        return socket.emit('error', { message: 'Not authorized for this chat' });
+      }
+
+      const newMessage = await Message.create({
         chatId,
-        timestamp: new Date()
+        sender: socket.userId,
+        receiver: receiverId,
+        content: message.trim(),
       });
+
+      await Chat.findByIdAndUpdate(chatId, {
+        lastMessage: {
+          _id: newMessage._id,
+          content: newMessage.content,
+          sender: newMessage.sender,
+          createdAt: newMessage.createdAt,
+        },
+        updatedAt: new Date(),
+      });
+
+      const receiverSocketId = connectedUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('receiveMessage', {
+          sender: socket.userId,
+          message: newMessage,
+          chatId,
+        });
+      }
+
+      socket.emit('messageSent', newMessage);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      socket.emit('error', { message: `Failed to send message: ${error.message}` });
     }
   });
 
   // Handle typing indicators
   socket.on('typing', (data) => {
-    const { receiverId, isTyping } = data;
-    const receiverSocketId = connectedUsers.get(receiverId);
-    
+    console.log("Incoming typing event:", data);
+    const { receiver, isTyping } = data;
+    const receiverSocketId = connectedUsers.get(receiver); // Fixed: Use receiver instead of receiverId
     if (receiverSocketId) {
       io.to(receiverSocketId).emit('userTyping', {
         senderId: socket.userId,
@@ -73,7 +117,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     if (socket.userId) {
       connectedUsers.delete(socket.userId);
-      // Notify friends that user is offline
       socket.broadcast.emit('userOffline', socket.userId);
     }
     console.log('User disconnected:', socket.id);
@@ -85,8 +128,8 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
