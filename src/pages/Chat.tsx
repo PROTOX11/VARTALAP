@@ -39,10 +39,10 @@ const Chat: React.FC = () => {
             setMessages(
               data.map((msg: any) => ({
                 _id: msg._id,
-                sender: msg.sender,
+                sender: typeof msg.sender === 'string' ? msg.sender : msg.sender,
                 content: msg.content,
                 timestamp: new Date(msg.createdAt),
-                isRead: false,
+                isRead: msg.isRead || false,
               }))
             );
           } else {
@@ -60,19 +60,31 @@ const Chat: React.FC = () => {
 
   // Listen for incoming messages, errors, and typing events
   useEffect(() => {
-    if (socket && selectedUser && selectedUser.chatId) {
+    if (socket && selectedUser?.chatId) {
       socket.on('receiveMessage', ({ sender, message, chatId }) => {
         if (chatId === selectedUser.chatId) {
           setMessages((prev) => [
             ...prev,
             {
               _id: message._id,
-              sender,
+              sender: typeof sender === 'string' ? sender : sender,
               content: message.content,
               timestamp: new Date(message.createdAt),
-              isRead: false,
+              isRead: message.isRead || false,
             },
           ]);
+        }
+      });
+
+      socket.on('messageSent', (message) => {
+        if (message.chatId === selectedUser.chatId) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === message._id || (msg.timestamp.toISOString() === new Date(message.createdAt).toISOString() && msg.content === message.content)
+                ? { ...msg, _id: message._id, timestamp: new Date(message.createdAt), isRead: message.isRead || false }
+                : msg
+            )
+          );
         }
       });
 
@@ -89,6 +101,7 @@ const Chat: React.FC = () => {
 
       return () => {
         socket.off('receiveMessage');
+        socket.off('messageSent');
         socket.off('userTyping');
         socket.off('error');
       };
@@ -97,14 +110,16 @@ const Chat: React.FC = () => {
 
   // Emit typing events
   useEffect(() => {
-    if (socket && selectedUser && messageText) {
-      socket.emit('typing', { receiver: selectedUser._id, isTyping: true });
-      const timeout = setTimeout(() => {
-        socket.emit('typing', { receiver: selectedUser._id, isTyping: false });
-      }, 2000);
+    if (socket && selectedUser) {
+      const isTypingNow = messageText.trim().length > 0;
+      socket.emit('typing', { receiver: selectedUser._id, isTyping: isTypingNow });
+      let timeout: NodeJS.Timeout;
+      if (isTypingNow) {
+        timeout = setTimeout(() => {
+          socket.emit('typing', { receiver: selectedUser._id, isTyping: false });
+        }, 2000);
+      }
       return () => clearTimeout(timeout);
-    } else if (socket && selectedUser) {
-      socket.emit('typing', { receiver: selectedUser._id, isTyping: false });
     }
   }, [messageText, socket, selectedUser]);
 
@@ -116,30 +131,26 @@ const Chat: React.FC = () => {
   }, [messageText, messages]);
 
   const handleSendMessage = () => {
-    if (messageText.trim() && selectedUser && selectedUser.chatId && user?._id) {
-      if (!isConnected) {
-        alert('Socket not connected. Please try again.');
-        return;
-      }
-      const newMessage: Message = {
-        _id: Date.now().toString(),
+    if (messageText.trim() && selectedUser?.chatId && user?._id && isConnected) {
+      // Optimistically add message to UI
+      const tempMessage: Message = {
+        _id: Date.now().toString(), // Temporary ID
         sender: user._id,
         content: messageText.trim(),
         timestamp: new Date(),
         isRead: false,
       };
-
-      setMessages((prev) => [...prev, newMessage]);
-      console.log('Sending message:', {
-        receiverId: selectedUser._id,
-        chatId: selectedUser.chatId,
-        message: messageText.trim(),
-      });
+      setMessages((prev) => [...prev, tempMessage]);
       sendMessage(selectedUser._id, selectedUser.chatId, messageText.trim());
       setMessageText('');
     } else {
-      console.error('Cannot send message: Missing chatId, user, or message');
-      alert('Please select a user and enter a message');
+      console.error('Cannot send message: Missing requirements', {
+        messageText: messageText.trim(),
+        chatId: selectedUser?.chatId,
+        userId: user?._id,
+        isConnected,
+      });
+      alert('Please enter a message and ensure you are connected');
     }
   };
 

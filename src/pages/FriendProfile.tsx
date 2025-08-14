@@ -11,10 +11,11 @@ type FriendUser = any;
 const FriendProfile: React.FC = () => {
   const navigate = useNavigate();
   const { friendId } = useParams();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [friendData, setFriendData] = useState<FriendUser | null>(null);
   const [friendPosts, setFriendPosts] = useState<FriendPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false); // Local state for follow status
 
   useEffect(() => {
     const fetchFriendData = async () => {
@@ -32,6 +33,8 @@ const FriendProfile: React.FC = () => {
           const data = await res.json();
           setFriendData(data.user);
           setFriendPosts(data.posts);
+          // Initialize isFollowing based on user.following or friendData.followers
+          setIsFollowing(user?.following?.includes(data.user._id) || data.user.followers?.includes(user?._id) || false);
         } else {
           setFriendData(null);
         }
@@ -44,33 +47,52 @@ const FriendProfile: React.FC = () => {
     };
 
     fetchFriendData();
-  }, [friendId]);
+  }, [friendId, user?.following]);
 
-  const handleSendMessage= () => {
+  const handleSendMessage = () => {
     navigate(`/chat?user=${friendData?._id}`);
   };
-
-  const isFollowing = user?.following?.includes(friendData?._id);
 
   const handleFollowToggle = async () => {
     if (!friendData?._id || !user?._id) return;
 
-    const url = `/api/users/${isFollowing ? 'unfollow' : 'follow'}/${friendData._id}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
+    // Optimistically update isFollowing for immediate UI feedback
+    setIsFollowing(!isFollowing);
 
-    if (res.ok) {
-      // Optimistically update the friend's follower list for immediate UI feedback.
-      setFriendData((prev: FriendUser) => {
-        if (!prev) return null;
-        const newFollowers = isFollowing
-          ? prev.followers.filter((id: string) => id !== user._id)
-          : [...prev.followers, user._id];
-        return { ...prev, followers: newFollowers };
+    try {
+      const url = `/api/users/${isFollowing ? 'unfollow' : 'follow'}/${friendData._id}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      // This won't update the `isFollowing` state until page reload, as `user` context is not updated.
+
+      if (res.ok) {
+        // Update friendData.followers
+        setFriendData((prev: FriendUser) => {
+          if (!prev) return null;
+          const newFollowers = isFollowing
+            ? prev.followers.filter((id: string) => id !== user._id)
+            : [...(prev.followers || []), user._id];
+          return { ...prev, followers: newFollowers };
+        });
+
+        // Update user.following in AuthContext (if setUser is available)
+        setUser((prev: any) => {
+          if (!prev) return prev;
+          const newFollowing = isFollowing
+            ? prev.following.filter((id: string) => id !== friendData._id)
+            : [...(prev.following || []), friendData._id];
+          return { ...prev, following: newFollowing };
+        });
+      } else {
+        // Revert optimistic update on failure
+        setIsFollowing(!isFollowing);
+        console.error('Failed to toggle follow:', await res.text());
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setIsFollowing(!isFollowing);
+      console.error('Failed to toggle follow:', error);
     }
   };
 
@@ -97,6 +119,9 @@ const FriendProfile: React.FC = () => {
       </div>
     );
   }
+
+  // Prevent self-follow
+  const isSelf = user?._id === friendData._id;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-0">
@@ -148,7 +173,7 @@ const FriendProfile: React.FC = () => {
               <h1 className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
                 {friendData.username}
               </h1>
-              
+
               <div className="flex justify-center md:justify-start space-x-6 mb-4">
                 <div className="text-center">
                   <div className="font-bold text-gray-900 dark:text-white">{friendPosts.length}</div>
@@ -163,22 +188,21 @@ const FriendProfile: React.FC = () => {
                   <div className="text-sm text-gray-500 dark:text-gray-400">Following</div>
                 </div>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-2 md:gap-4">
                 <button
                   onClick={handleFollowToggle}
-                  className={`flex items-center justify-center space-x-2 px-4 md:px-6 py-2 rounded-full font-medium transition-colors ${
+                  className={`flex items-center justify-center space-x-2 px-4 md:px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
                     isFollowing
                       ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                       : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
+                  disabled={isSelf}
                 >
                   {isFollowing ? <UserCheck size={16} /> : <UserPlus size={16} />}
-                  <span className="text-sm md:text-base">
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </span>
+                  <span className="text-sm md:text-base">{isFollowing ? 'Unfollow' : 'Follow'}</span>
                 </button>
-                
+
                 <button
                   onClick={handleSendMessage}
                   className="flex items-center justify-center space-x-2 px-4 md:px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm md:text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -199,9 +223,7 @@ const FriendProfile: React.FC = () => {
           <p className="text-gray-700 dark:text-gray-300">{friendData.about}</p>
           <div className="mt-3 flex items-center space-x-2">
             <div
-              className={`w-2 h-2 rounded-full ${
-                friendData.isOnline ? 'bg-green-500' : 'bg-gray-400'
-              }`}
+              className={`w-2 h-2 rounded-full ${friendData.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
             />
             <span className="text-sm text-gray-500 dark:text-gray-400">
               {friendData.isOnline ? 'Online' : `Last seen ${friendData.lastSeen || '2 hours ago'}`}

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-interface User {
+export interface User {
+  token: any;
   id: string;
   _id?: string;
   username: string;
@@ -43,6 +44,7 @@ interface Friend {
 
 interface AuthContextType {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   userPosts: Post[];
   login: (emailOrPhone: string, password: string) => Promise<boolean>;
   signup: (userData: any) => Promise<boolean>;
@@ -369,6 +371,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{
       user,
+      setUser,
       userPosts,
       login,
       signup,

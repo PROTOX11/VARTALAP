@@ -5,6 +5,7 @@ const AllUser = require('../models/AllUser');
 const Post = require('../models/Post');
 const auth = require('../middleware/auth');
 const upload = require('../cloudinary');
+const { createFollowNotification } = require('../controller/notificationController');
 
 const router = express.Router();
 
@@ -35,7 +36,35 @@ router.post('/follow/:userId', auth, async (req, res) => {
     });
 
 
+    // Create and send notification
+    const notification = await createFollowNotification(userId, targetUserId);
+
+    if (notification) {
+      try {
+        const io = req.app.get('io');
+        const connectedUsers = req.app.get('connectedUsers');
+        const recipientSocketId = connectedUsers.get(targetUserId);
+
+        if (io && recipientSocketId) {
+          const sender = await User.findById(userId).select('username profilePicture');
+          const payload = {
+            _id: notification._id,
+            type: notification.type,
+            user: { username: sender.username, profilePicture: sender.profilePicture },
+            content: notification.content,
+            createdAt: notification.createdAt,
+            isRead: false,
+            postImage: null,
+          };
+          io.to(recipientSocketId).emit('notification', payload);
+        }
+      } catch (socketError) {
+        console.error('Socket notification error:', socketError);
+      }
+    }
+
     res.json({ message: 'Followed successfully' });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error while following user' });

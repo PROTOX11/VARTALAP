@@ -26,15 +26,10 @@ const postSchema = new mongoose.Schema({
     trim: true
   },
   likes: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }],
+
   comments: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -79,6 +74,7 @@ const postSchema = new mongoose.Schema({
 // Index for better performance
 postSchema.index({ user: 1, createdAt: -1 });
 postSchema.index({ hashtags: 1 });
-postSchema.index({ 'likes.user': 1 });
+postSchema.index({ likes: 1 });
+
 
 module.exports = mongoose.model('Post', postSchema);

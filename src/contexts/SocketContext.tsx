@@ -1,12 +1,14 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-const SocketContext = createContext<{
+interface SocketContextType {
   socket: Socket | null;
   sendMessage: (receiverId: string, chatId: string, message: string) => void;
   isConnected: boolean;
-}>({
+}
+
+const SocketContext = createContext<SocketContextType>({
   socket: null,
   sendMessage: () => {},
   isConnected: false,
@@ -14,34 +16,38 @@ const SocketContext = createContext<{
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     if (user && user._id && typeof user._id === 'string' && user._id.length === 24) {
-      socketRef.current = io('http://localhost:5000', {
+      const newSocket = io('http://localhost:5000', {
         transports: ['websocket', 'polling'],
+        withCredentials: true,
       });
 
-      socketRef.current.on('connect', () => {
+      setSocket(newSocket);
+
+      newSocket.on('connect', () => {
         console.log('Socket connected:', user._id);
         setIsConnected(true);
-        socketRef.current?.emit('join', user._id); // Emit join event with userId
+        newSocket.emit('join', user._id);
       });
 
-      socketRef.current.on('connect_error', (error) => {
+      newSocket.on('connect_error', (error) => {
         console.error('Socket connection error:', error.message);
         setIsConnected(false);
       });
 
-      socketRef.current.on('disconnect', () => {
+      newSocket.on('disconnect', () => {
         console.log('Socket disconnected:', user._id);
         setIsConnected(false);
       });
 
       return () => {
-        socketRef.current?.disconnect();
+        newSocket.disconnect();
         setIsConnected(false);
+        setSocket(null);
       };
     } else {
       console.warn('No valid user._id for socket connection:', user);
@@ -49,19 +55,28 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [user, user?._id]);
 
   const sendMessage = (receiverId: string, chatId: string, message: string) => {
-    if (socketRef.current && receiverId && chatId && message) {
-      socketRef.current.emit('sendMessage', {
+    if (!socket || socket.disconnected) {
+      console.error('Cannot send message: Socket is not connected', {
         receiverId,
         chatId,
         message,
       });
-    } else {
-      console.error('Cannot send message: Missing socket or parameters', { receiverId, chatId, message });
+      return;
     }
+    if (!receiverId || !chatId || !message) {
+      console.error('Cannot send message: Missing parameters', {
+        receiverId,
+        chatId,
+        message,
+      });
+      return;
+    }
+    console.log('Sending message:', { receiverId, chatId, message });
+    socket.emit('sendMessage', { receiverId, chatId, message });
   };
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, sendMessage, isConnected }}>
+    <SocketContext.Provider value={{ socket, sendMessage, isConnected }}>
       {children}
     </SocketContext.Provider>
   );

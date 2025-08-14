@@ -7,6 +7,11 @@ const socketIo = require('socket.io');
 const Chat = require('./models/Chat');
 const Message = require('./models/Message');
 
+const notificationsRoutes = require('./routes/notification');
+const User = require('./models/User'); // assuming User model exists
+const Post = require('./models/Post');
+
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -27,9 +32,12 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/message', require('./routes/messages'));
+app.use('/api', notificationsRoutes);
 
 // Socket.io connection handling
 const connectedUsers = new Map();
+app.set('io', io);
+app.set('connectedUsers', connectedUsers);
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);

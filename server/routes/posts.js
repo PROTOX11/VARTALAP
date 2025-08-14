@@ -4,8 +4,9 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const upload = require('../cloudinary');
-
+const Notification = require('../models/Notification');
 const router = express.Router();
+const { createLikeNotification } = require('../controller/notificationController');
 
 // Create Post
 router.post('/', [auth, upload.single('media')], [
@@ -78,7 +79,6 @@ router.get('/feed', auth, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Get posts from user and friends
     const userFriends = req.user.friends || [];
     const userIds = [req.user._id, ...userFriends];
 
@@ -93,47 +93,87 @@ router.get('/feed', auth, async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    res.json(posts);
+    const postsWithIsLiked = posts.map(post => ({
+      ...post.toJSON(),
+      isLiked: post.likes.some(like => like.equals(req.user._id)),
+    }));
+
+    res.json(postsWithIsLiked);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // Like/Unlike Post
 router.post('/:postId/like', auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
+    const postId = req.params.postId;
+    console.log('Post ID received:', postId); // Debug
+    if (!postId || postId === 'undefined') {
+      console.log('Invalid post ID:', postId);
+      return res.status(400).json({ message: 'Invalid post ID' });
+    }
 
+    const post = await Post.findById(postId);
     if (!post) {
+      console.log('Post not found for ID:', postId);
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    const likeIndex = post.likes.findIndex(
-      like => like.user.toString() === req.user._id.toString()
-    );
+    const userId = req.user._id;
+    console.log('User ID:', userId, 'Is liked:', post.likes.includes(userId));
+    const isLiked = post.likes.includes(userId);
 
-    if (likeIndex > -1) {
-      // Unlike
-      post.likes.splice(likeIndex, 1);
-    } else {
-      // Like
-      post.likes.push({ user: req.user._id });
+    const update = isLiked
+      ? { $pull: { likes: userId } }
+      : { $addToSet: { likes: userId } };
+
+    const updatedPost = await Post.findByIdAndUpdate(postId, update, {
+      new: true,
+    });
+
+    console.log('Updated post:', updatedPost);
+
+    if (!isLiked && updatedPost && post.user.toString() !== userId.toString()) {
+      const notification = await createLikeNotification(userId, post._id, post.user);
+      console.log('Notification created:', notification);
+      try {
+        const io = req.app.get('io');
+        const connectedUsers = req.app.get('connectedUsers');
+        const recipientSocketId = connectedUsers.get(post.user.toString());
+        if (io && recipientSocketId) {
+          const sender = await User.findById(userId).select('username profilePicture');
+          const payload = {
+            _id: notification._id,
+            type: notification.type,
+            user: { username: sender.username, profilePicture: sender.profilePicture },
+            content: notification.content,
+            createdAt: notification.createdAt,
+            isRead: false,
+            postImage: post.image || null,
+          };
+          io.to(recipientSocketId).emit('notification', payload);
+        }
+      } catch (socketError) {
+        console.error('Socket notification error:', socketError);
+      }
     }
 
-    await post.save();
+    if (!updatedPost) {
+      console.log('Post update failed for ID:', postId);
+      return res.status(404).json({ message: 'Post not found or could not be updated.' });
+    }
 
     res.json({
-      message: likeIndex > -1 ? 'Post unliked' : 'Post liked',
-      likesCount: post.likes.length,
-      isLiked: likeIndex === -1
+      message: isLiked ? 'Post unliked' : 'Post liked',
+      likesCount: updatedPost.likes.length,
+      isLiked: !isLiked,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in like/unlike route:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // Add Comment
 router.post('/:postId/comment', auth, [
   body('content').notEmpty().trim()
