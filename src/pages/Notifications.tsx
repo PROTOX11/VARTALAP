@@ -10,16 +10,14 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface Notification {
   _id: string;
-  type: 'like' | 'comment' | 'follow' | 'mention';
+  type: 'like' | 'comment' | 'follow' | 'mention' | 'friend_request' | 'message';
   user: {
-    _id: string; // Added user ID for navigation
     username: string;
     profilePicture: string;
   };
   content: string;
   createdAt: string;
   isRead: boolean;
-  postId?: string; // Added for post-related notifications
   postImage?: string;
 }
 
@@ -38,6 +36,7 @@ const Notifications: React.FC = () => {
     socket.emit('join', user.id || user._id);
 
     socket.on('notification', (newNotification) => {
+      console.log('Received real-time notification:', newNotification);
       setNotifications((prev) => [newNotification, ...prev]);
     });
 
@@ -56,6 +55,7 @@ const Notifications: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log('Fetched notifications:', data);
       setNotifications(data);
     } catch (err) {
       console.error('Error fetching notifications', err);
@@ -102,17 +102,81 @@ const Notifications: React.FC = () => {
     }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
-    // Mark notification as read
+  const fetchSenderId = async (username: string): Promise<string | null> => {
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get(`http://localhost:5000/api/users/all-users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const matchedUser = data.find((u: any) => u.username.toLowerCase() === username.toLowerCase());
+      return matchedUser ? matchedUser.userId || matchedUser._id || null : null;
+    } catch (err) {
+      console.error('Error fetching sender ID for username:', username, err);
+      return null;
+    }
+  };
+
+  const fetchPostId = async (notificationId: string, userId: string): Promise<string | null> => {
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get(`http://localhost:5000/api/posts/me`, { // Updated to /api/posts/me
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Filter posts by userId (recipient) and check if notificationId is in likes or comments
+      const matchedPost = data.find((p: any) =>
+        p.userId === userId && (
+          p.likes?.includes(notificationId) ||
+          p.comments?.some((c: any) => c.notificationId === notificationId)
+        )
+      );
+      return matchedPost ? matchedPost._id || matchedPost.id || null : null;
+    } catch (err) {
+      console.error('Error fetching post ID for notification:', notificationId, err);
+      return null;
+    }
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {
-      markAsRead(notification._id);
+      await markAsRead(notification._id);
     }
 
-    // Navigate based on notification type
-    if (notification.type === 'follow') {
-      navigate(`/friend/${notification.user._id}`);
-    } else if (notification.postId) {
-      navigate(`/post/${notification.postId}`);
+    const senderId = await fetchSenderId(notification.user.username);
+
+    if (notification.type === 'follow' || notification.type === 'friend_request') {
+      if (!senderId) {
+        console.warn('Cannot navigate: Missing sender ID for notification:', notification);
+        return;
+      }
+      navigate(`/friend/${senderId}`);
+    } else if (notification.type === 'like' || notification.type === 'comment' || notification.type === 'mention') {
+      if (!user?._id) {
+        console.warn('Cannot navigate: Missing user ID for notification:', notification);
+        if (senderId) {
+          navigate(`/friend/${senderId}`);
+        } else {
+          console.warn('Fallback to sender profile failed: Missing sender ID');
+        }
+        return;
+      }
+      const postId = await fetchPostId(notification._id, user._id);
+      if (postId) {
+        navigate(`/post/${postId}`);
+      } else {
+        console.warn('Cannot navigate: Missing post ID for notification:', notification);
+        if (senderId) {
+          navigate(`/friend/${senderId}`);
+        } else {
+          console.warn('Fallback to sender profile failed: Missing sender ID');
+        }
+      }
+    } else if (notification.type === 'message') {
+      if (!senderId) {
+        console.warn('Cannot navigate: Missing sender ID for message notification:', notification);
+        navigate(`/chat`);
+        return;
+      }
+      navigate(`/chat/${senderId}`);
     }
   };
 
@@ -126,6 +190,10 @@ const Notifications: React.FC = () => {
         return <UserPlus size={20} className="text-green-500" />;
       case 'mention':
         return <Zap size={20} className="text-yellow-500" />;
+      case 'friend_request':
+        return <UserPlus size={20} className="text-purple-500" />;
+      case 'message':
+        return <MessageCircle size={20} className="text-teal-500" />;
       default:
         return <Heart size={20} className="text-gray-500" />;
     }
@@ -139,7 +207,6 @@ const Notifications: React.FC = () => {
         <Sidebar />
       </div>
       <div className="flex-1 pb-20 md:pb-0">
-        {/* Mobile Header */}
         <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button onClick={() => navigate('/dashboard')} className="p-1 text-gray-600 dark:text-gray-400">
@@ -157,7 +224,6 @@ const Notifications: React.FC = () => {
           <ThemeToggle />
         </div>
 
-        {/* Desktop Header */}
         <div className="hidden md:block p-6 border-b border-gray-200 dark:border-gray-700 md:pl-80">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -194,7 +260,6 @@ const Notifications: React.FC = () => {
           </div>
         </div>
 
-        {/* Notifications List */}
         <div className="max-w-4xl mx-auto p-4 md:p-6">
           {unreadCount > 0 && (
             <div className="md:hidden mb-4">

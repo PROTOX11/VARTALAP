@@ -19,7 +19,6 @@ export interface User {
   following: string[];
 }
 
-
 interface Post {
   id: string;
   type: 'text' | 'image' | 'video';
@@ -35,7 +34,6 @@ interface Post {
 
 interface Friend {
   _id: string;
-
   username: string;
   profilePicture: string;
   isOnline: boolean;
@@ -89,7 +87,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok) {
         const data = await res.json();
         const posts = Array.isArray(data) ? data : data.posts;
-        setUserPosts(posts || []);
+        const mappedPosts = posts.map((post: { _id: any; id: any; }) => ({
+          ...post,
+          id: post._id || post.id // Map _id to id
+        }));
+        setUserPosts(mappedPosts || []);
       }
     } catch (err) {
       console.error('Failed to load user posts:', err);
@@ -112,7 +114,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               userData.id = userData._id;
             }
             setUser(userData);
-
             localStorage.setItem('user', JSON.stringify(userData));
             fetchUserPosts();
           } else {
@@ -128,7 +129,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUser();
   }, []);
 
-
   const login = async (emailOrPhone: string, password: string): Promise<boolean> => {
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
@@ -142,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.messages|| 'Login failed. Please try again.');
+        toast.error(data.messages || 'Login failed. Please try again.');
         return false;
       }
 
@@ -176,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.messages|| 'Signup failed. Please try again.');
+        toast.error(data.messages || 'Signup failed. Please try again.');
         return false;
       }
 
@@ -253,7 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.messages|| 'Profile update failed.');
+        toast.error(data.messages || 'Profile update failed.');
         return false;
       }
 
@@ -286,7 +286,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedPosts = user.savedPosts.includes(postId)
         ? user.savedPosts.filter(id => id !== postId)
         : [...user.savedPosts, postId];
-
       const updatedUser = { ...user, savedPosts };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -332,7 +331,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (blob) formData.append('media', blob, 'post.mp4');
       }
 
-
       const response = await fetch('http://localhost:5000/api/posts', {
         method: 'POST',
         headers: {
@@ -344,7 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.messages|| 'Failed to create post.');
+        toast.error(data.messages || 'Failed to create post.');
         return false;
       }
 
