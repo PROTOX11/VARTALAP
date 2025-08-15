@@ -36,7 +36,6 @@ const Notifications: React.FC = () => {
     socket.emit('join', user.id || user._id);
 
     socket.on('notification', (newNotification) => {
-      console.log('Received real-time notification:', newNotification);
       setNotifications((prev) => [newNotification, ...prev]);
     });
 
@@ -55,7 +54,6 @@ const Notifications: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('Fetched notifications:', data);
       setNotifications(data);
     } catch (err) {
       console.error('Error fetching notifications', err);

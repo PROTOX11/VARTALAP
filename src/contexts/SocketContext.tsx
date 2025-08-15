@@ -29,7 +29,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setSocket(newSocket);
 
       newSocket.on('connect', () => {
-        console.log('Socket connected:', user._id);
         setIsConnected(true);
         newSocket.emit('join', user._id);
       });
@@ -40,7 +39,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
 
       newSocket.on('disconnect', () => {
-        console.log('Socket disconnected:', user._id);
         setIsConnected(false);
       });
 
@@ -71,7 +69,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
       return;
     }
-    console.log('Sending message:', { receiverId, chatId, message });
     socket.emit('sendMessage', { receiverId, chatId, message });
   };
 

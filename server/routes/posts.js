@@ -108,20 +108,16 @@ router.get('/feed', auth, async (req, res) => {
 router.post('/:postId/like', auth, async (req, res) => {
   try {
     const postId = req.params.postId;
-    console.log('Post ID received:', postId); // Debug
     if (!postId || postId === 'undefined') {
-      console.log('Invalid post ID:', postId);
       return res.status(400).json({ message: 'Invalid post ID' });
     }
 
     const post = await Post.findById(postId);
     if (!post) {
-      console.log('Post not found for ID:', postId);
       return res.status(404).json({ message: 'Post not found' });
     }
 
     const userId = req.user._id;
-    console.log('User ID:', userId, 'Is liked:', post.likes.includes(userId));
     const isLiked = post.likes.includes(userId);
 
     const update = isLiked
@@ -132,11 +128,8 @@ router.post('/:postId/like', auth, async (req, res) => {
       new: true,
     });
 
-    console.log('Updated post:', updatedPost);
-
     if (!isLiked && updatedPost && post.user.toString() !== userId.toString()) {
       const notification = await createLikeNotification(userId, post._id, post.user);
-      console.log('Notification created:', notification);
       try {
         const io = req.app.get('io');
         const connectedUsers = req.app.get('connectedUsers');
@@ -160,7 +153,6 @@ router.post('/:postId/like', auth, async (req, res) => {
     }
 
     if (!updatedPost) {
-      console.log('Post update failed for ID:', postId);
       return res.status(404).json({ message: 'Post not found or could not be updated.' });
     }
 

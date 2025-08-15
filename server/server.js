@@ -40,7 +40,6 @@ app.set('io', io);
 app.set('connectedUsers', connectedUsers);
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
 
   // User joins
   socket.on('join', (userId) => {
@@ -110,7 +109,6 @@ io.on('connection', (socket) => {
 
   // Handle typing indicators
   socket.on('typing', (data) => {
-    console.log("Incoming typing event:", data);
     const { receiver, isTyping } = data;
     const receiverSocketId = connectedUsers.get(receiver); // Fixed: Use receiver instead of receiverId
     if (receiverSocketId) {
@@ -127,7 +125,6 @@ io.on('connection', (socket) => {
       connectedUsers.delete(socket.userId);
       socket.broadcast.emit('userOffline', socket.userId);
     }
-    console.log('User disconnected:', socket.id);
   });
 });
 
@@ -152,5 +149,4 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });

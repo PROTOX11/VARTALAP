@@ -50,19 +50,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
 
   const getToken = () => {
     const token = localStorage.getItem('token');
-    console.log('Retrieved token from localStorage:', token ? token.substring(0, 20) + '...' : null);
     return token;
   };
 
   const getPostId = () => {
     const postId = post.id || post._id;
-    console.log('Resolved Post ID:', postId);
     return postId;
   };
 
   const getUserId = () => {
     const userId = post.user.id || post.user._id || post.user.userId;
-    console.log('Resolved User ID:', userId);
     return userId;
   };
 
@@ -79,7 +76,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   const handleLike = async () => {
     const token = getToken();
     const postId = getPostId();
-    console.log('User object in handleLike:', user);
     if (!user || !token) {
       console.error('No user or token found. User:', user, 'Token:', token);
       alert('Session error: Please log in again to like a post.');
@@ -105,7 +101,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
           },
         }
       );
-      console.log('Like API response:', response.data);
 
       setLikesCount(response.data.likesCount);
       setLiked(response.data.isLiked);
@@ -135,7 +130,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   // const handleSave = async () => {
   //   const token = getToken();
   //   const postId = getPostId();
-  //   console.log('User object in handleSave:', user);
   //   if (!user || !token) {
   //     console.error('No user or token found. User:', user, 'Token:', token);
   //     alert('Session error: Please log in again to save a post.');
@@ -173,7 +167,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   const handleDelete = async () => {
     const token = getToken();
     const postId = getPostId();
-    console.log('User object in handleDelete:', user);
     if (!user || !token) {
       console.error('No user or token found. User:', user, 'Token:', token);
       alert('Session error: Please log in again to delete a post.');
