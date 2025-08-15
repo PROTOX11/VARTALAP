@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Volume2, VolumeX, Play, Pause } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Wow {
   id: string;
@@ -37,6 +38,7 @@ const WowVideoPlayer: React.FC<WowVideoPlayerProps> = ({
   handleLike,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (videoRef.current) {
@@ -55,6 +57,16 @@ const WowVideoPlayer: React.FC<WowVideoPlayerProps> = ({
       videoRef.current.muted = isMuted;
     }
   }, [isMuted]);
+
+  const handleProfileClick = () => {
+    const userId = wow.user._id || wow.user.userId;
+    if (!userId) {
+      console.error('Invalid user ID:', wow.user);
+      alert('Cannot navigate to profile: Invalid user ID.');
+      return;
+    }
+    navigate(`/friend/${userId}`);
+  };
 
   return (
     <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
@@ -94,7 +106,8 @@ const WowVideoPlayer: React.FC<WowVideoPlayerProps> = ({
               <img
                 src={wow.user?.profilePicture}
                 alt={wow.user?.username}
-                className="w-8 h-8 rounded-full object-cover border-2 border-white"
+                className="w-8 h-8 rounded-full object-cover border-2 border-white cursor-pointer"
+                onClick={handleProfileClick}
               />
               <span className="text-white font-semibold">
                 {wow.user?.username}
@@ -118,15 +131,6 @@ const WowVideoPlayer: React.FC<WowVideoPlayerProps> = ({
               </div>
               <span className="text-white text-xs font-medium">
                 {wow.likes}
-              </span>
-            </button>
-
-            <button className="flex flex-col items-center space-y-1">
-              <div className="p-3 bg-black/50 rounded-full backdrop-blur-sm">
-                <MessageCircle size={24} className="text-white" />
-              </div>
-              <span className="text-white text-xs font-medium">
-                {wow.comments}
               </span>
             </button>
           </div>

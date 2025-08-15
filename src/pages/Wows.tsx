@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Heart, MessageCircle, Volume2, VolumeX, User, Play, Pause } from 'lucide-react';
+import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
 import { useAuth } from '../contexts/AuthContext';
+import WowVideoPlayer from './../components/WowVideoPlayer';
 
 interface Wow {
   id: string;
@@ -26,29 +27,24 @@ interface Wow {
 
 const Wows: React.FC = () => {
   const navigate = useNavigate();
-  // We'll manage currentWow visually by scroll position, not directly by state for scroll snapping
-  const [currentWow, setCurrentWow] = useState(0); // Still useful for indicators and data fetching
+  const [currentWow, setCurrentWow] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]); // Array of refs for each video
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null); // Ref for the main scrollable container
-
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [wows, setWows] = useState<Wow[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const { user } = useAuth();
 
-  // Fetch all users to get their follower information
   useEffect(() => {
     const fetchAllUsers = async () => {
       try {
         const res = await fetch('/api/users/all-users', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         });
         if (res.ok) {
           const data = await res.json();
@@ -69,8 +65,8 @@ const Wows: React.FC = () => {
       try {
         const res = await fetch('/api/posts/all-videos', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         });
         if (res.ok) {
           const data = await res.json();
@@ -81,7 +77,9 @@ const Wows: React.FC = () => {
                 _id: post.user?._id,
                 userId: post.user?.userId,
                 username: post.user?.username || 'Unknown',
-                profilePicture: post.user?.profilePicture || 'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png',
+                profilePicture:
+                  post.user?.profilePicture ||
+                  'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png',
                 followers: post.user?.followers || [],
               },
               video: post.video,
@@ -91,7 +89,7 @@ const Wows: React.FC = () => {
               comments: post.comments?.length || 0,
               shares: post.shares?.length || 0,
               isLiked: post.likes?.includes(user?.id || user?._id),
-            }))
+            })),
           );
         } else {
           const errorText = await res.text();
@@ -109,14 +107,16 @@ const Wows: React.FC = () => {
   }, [user]);
 
   const isFollowing = (person: any) => {
-    const upToDatePerson = allUsers.find(p => (p.userId || p._id) === (person.userId || person._id || person.id));
+    const upToDatePerson = allUsers.find(
+      p => (p.userId || p._id) === (person.userId || person._id || person.id),
+    );
     return user && upToDatePerson && upToDatePerson.followers && upToDatePerson.followers.includes(user.id);
   };
 
   const handleFollowToggle = async (personToFollow: any) => {
     const personId = personToFollow._id || personToFollow.userId || personToFollow.id;
     if (!personId) {
-      console.error("Cannot follow/unfollow: Person ID is undefined.");
+      console.error('Cannot follow/unfollow: Person ID is undefined.');
       return;
     }
 
@@ -127,8 +127,8 @@ const Wows: React.FC = () => {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
 
       if (res.ok) {
@@ -141,11 +141,11 @@ const Wows: React.FC = () => {
                   ? p.followers.filter((id: string) => user && id !== user.id)
                   : user
                     ? [...(p.followers || []), user.id]
-                    : p.followers || []
+                    : p.followers || [],
               };
             }
             return p;
-          })
+          }),
         );
         setWows(prevWows =>
           prevWows.map(wow => {
@@ -158,12 +158,12 @@ const Wows: React.FC = () => {
                     ? wow.user.followers.filter((id: string) => user && id !== user.id)
                     : user
                       ? [...(wow.user.followers || []), user.id]
-                      : wow.user.followers || []
-                }
+                      : wow.user.followers || [],
+                },
               };
             }
             return wow;
-          })
+          }),
         );
       } else {
         const errorText = await res.text();
@@ -174,32 +174,13 @@ const Wows: React.FC = () => {
     }
   };
 
-  // Get the current video ref dynamically
-  const currentVideoRef = videoRefs.current[currentWow];
-
   const togglePlayPause = () => {
-    if (currentVideoRef) {
-      if (isPlaying) {
-        currentVideoRef.pause();
-        setShowPlayIcon(true);
-      } else {
-        currentVideoRef.play().catch(error => {
-          console.warn("Video autoplay prevented:", error);
-          setIsPlaying(false);
-        });
-        setShowPlayIcon(false);
-      }
-      setIsPlaying(!isPlaying);
-    }
+    setIsPlaying(!isPlaying);
+    setShowPlayIcon(!isPlaying);
   };
 
-
   const toggleMute = () => {
-    if (currentVideoRef) {
-      const newMutedState = !currentVideoRef.muted;
-      currentVideoRef.muted = newMutedState;
-      setIsMuted(newMutedState);
-    }
+    setIsMuted(!isMuted);
   };
 
   const handleLike = async (wowId: string) => {
@@ -213,12 +194,12 @@ const Wows: React.FC = () => {
       prev.map((wow, index) =>
         index === wowIndex
           ? {
-            ...wow,
-            isLiked: !currentIsLiked,
-            likes: currentIsLiked ? currentLikes - 1 : currentLikes + 1
-          }
-          : wow
-      )
+              ...wow,
+              isLiked: !currentIsLiked,
+              likes: currentIsLiked ? currentLikes - 1 : currentLikes + 1,
+            }
+          : wow,
+      ),
     );
 
     try {
@@ -226,8 +207,8 @@ const Wows: React.FC = () => {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
 
       if (!res.ok) {
@@ -235,12 +216,12 @@ const Wows: React.FC = () => {
           prev.map((wow, index) =>
             index === wowIndex
               ? {
-                ...wow,
-                isLiked: currentIsLiked,
-                likes: currentLikes
-              }
-              : wow
-          )
+                  ...wow,
+                  isLiked: currentIsLiked,
+                  likes: currentLikes,
+                }
+              : wow,
+          ),
         );
         console.error('Failed to toggle like status:', res.status, await res.text());
       }
@@ -249,45 +230,16 @@ const Wows: React.FC = () => {
         prev.map((wow, index) =>
           index === wowIndex
             ? {
-              ...wow,
-              isLiked: currentIsLiked,
-              likes: currentLikes
-            }
-            : wow
-        )
+                ...wow,
+                isLiked: currentIsLiked,
+                likes: currentLikes,
+              }
+            : wow,
+        ),
       );
       console.error('Error toggling like status:', error);
     }
   };
-
-  useEffect(() => {
-    const currentVideo = videoRefs.current[currentWow];
-
-    console.log(`[DEBUG] currentWow: ${currentWow}, isPlaying: ${isPlaying}, isMuted: ${isMuted}`);
-
-    videoRefs.current.forEach((video, index) => {
-      if (video && index !== currentWow) {
-        video.pause();
-        video.currentTime = 0;
-        video.muted = true; // Mute all non-current videos to prevent audio leak
-      }
-    });
-
-    if (currentVideo) {
-      currentVideo.muted = isMuted;
-
-      if (isPlaying) {
-        setTimeout(() => {
-          currentVideo.play().catch(error => {
-            console.warn("useEffect: Video autoplay prevented:", error);
-            setIsPlaying(false);
-          });
-        }, 100); // small delay to ensure video is ready
-      } else {
-        currentVideo.pause();
-      }
-    }
-  }, [currentWow, isPlaying, isMuted, wows.length]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -298,7 +250,7 @@ const Wows: React.FC = () => {
     const observerOptions = {
       root: container,
       rootMargin: '0px',
-      threshold: 0.75, // 75% of the video container should be visible
+      threshold: 0.75,
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
@@ -322,7 +274,7 @@ const Wows: React.FC = () => {
     return () => {
       observer.disconnect();
     };
-  }, [wows.length]); // Re-run when the number of wows changes
+  }, [wows.length]);
 
   if (loading) {
     return (
@@ -379,103 +331,34 @@ const Wows: React.FC = () => {
               key={wowItem.id}
               className="relative h-full flex items-center justify-center snap-start"
             >
-              <div className="relative w-full max-w-md h-full bg-black rounded-lg overflow-hidden">
-                {wowItem.video && (
-                  <video
-                    ref={el => videoRefs.current[index] = el}
-                    src={wowItem.video}
-                    className="w-full h-full object-contain"
-                    loop
-                    onClick={togglePlayPause}
-                    onPlay={() => {
-                      if (index === currentWow) {
-                        setIsPlaying(true);
-                        setShowPlayIcon(false);
-                      }
-                    }}
-                    onPause={() => {
-                      if (index === currentWow) setIsPlaying(false);
-                    }}
-                  />
-                )}
-
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  {index === currentWow && !isPlaying && showPlayIcon && (
-                    <div className="p-4 bg-black/50 rounded-full backdrop-blur-sm">
-                      <Play size={40} className="text-white" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="absolute top-4 right-4 flex flex-col space-y-2">
-                  <button
-                    onClick={toggleMute}
-                    className="p-2 bg-black/50 rounded-full backdrop-blur-sm"
-                  >
-                    {isMuted ? (
-                      <VolumeX size={20} className="text-white" />
-                    ) : (
-                      <Volume2 size={20} className="text-white" />
-                    )}
-                  </button>
-                </div>
-
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                  <div className="flex items-end justify-between">
-                    <div className="flex-1 mr-4">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <img
-                          src={wowItem.user?.profilePicture}
-                          alt={wowItem.user?.username}
-                          className="w-8 h-8 rounded-full object-cover border-2 border-white"
-                        />
-                        <span className="text-white font-semibold">
-                          {wowItem.user?.username}
-                        </span>
-                        {user && wowItem.user && (user.id !== (wowItem.user.userId || wowItem.user._id)) && (
-                          <button
-                            className={`px-2 py-0.5 rounded-lg font-medium transition-colors ${isFollowing(wowItem.user)
+              <WowVideoPlayer
+                wow={wowItem}
+                isPlaying={index === currentWow && isPlaying}
+                isMuted={isMuted}
+                togglePlayPause={togglePlayPause}
+                toggleMute={toggleMute}
+                handleLike={handleLike}
+              />
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="flex items-end justify-between">
+                  <div className="flex-1 mr-4">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-white font-semibold">{wowItem.user?.username}</span>
+                      {user && wowItem.user && user.id !== (wowItem.user.userId || wowItem.user._id) && (
+                        <button
+                          className={`px-2 py-0.5 rounded-lg font-medium transition-colors ${
+                            isFollowing(wowItem.user)
                               ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                               : 'bg-purple-600 text-white hover:bg-purple-700'
-                              }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleFollowToggle(wowItem.user);
-                            }}
-                          >
-                            {isFollowing(wowItem.user) ? 'Unfollow' : 'Follow'}
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-white text-sm mb-3">
-                        {wowItem.caption}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col items-center space-y-4">
-                      <button
-                        onClick={() => handleLike(wowItem.id)}
-                        className="flex flex-col items-center space-y-1"
-                      >
-                        <div className="p-3 bg-black/50 rounded-full backdrop-blur-sm">
-                          <Heart
-                            size={24}
-                            className={wowItem.isLiked ? 'text-red-500 fill-current' : 'text-white'}
-                          />
-                        </div>
-                        <span className="text-white text-xs font-medium">
-                          {wowItem.likes}
-                        </span>
-                      </button>
-
-                      <button className="flex flex-col items-center space-y-1">
-                        <div className="p-3 bg-black/50 rounded-full backdrop-blur-sm">
-                          <MessageCircle size={24} className="text-white" />
-                        </div>
-                        <span className="text-white text-xs font-medium">
-                          {wowItem.comments}
-                        </span>
-                      </button>
+                          }`}
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleFollowToggle(wowItem.user);
+                          }}
+                        >
+                          {isFollowing(wowItem.user) ? 'Unfollow' : 'Follow'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

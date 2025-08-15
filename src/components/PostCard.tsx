@@ -3,11 +3,15 @@ import { Heart, MessageCircle, Share, MoreHorizontal, Bookmark, Trash2 } from 'l
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 interface Post {
-  id?: string; // Make id optional to handle _id
-  _id?: string; // Add _id as a fallback
+  id?: string;
+  _id?: string;
   user: {
+    id?: string;
+    _id?: string;
+    userId?: string;
     username: string;
     profilePicture: string;
     location?: string;
@@ -31,7 +35,7 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   const [liked, setLiked] = useState(post.isLiked || false);
-  const [saved, setSaved] = useState(post.isSaved || false);
+  // const [saved, setSaved] = useState(post.isSaved || false);
   const [likesCount, setLikesCount] = useState(() => {
     if (typeof post.likes === 'number') return post.likes;
     if (Array.isArray(post.likes)) return post.likes.length;
@@ -42,6 +46,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   else if (Array.isArray(post.comments)) commentsCount = post.comments.length;
   const [showMenu, setShowMenu] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const getToken = () => {
     const token = localStorage.getItem('token');
@@ -51,8 +56,24 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
 
   const getPostId = () => {
     const postId = post.id || post._id;
-    console.log('Resolved Post ID:', postId); // Debug post ID
+    console.log('Resolved Post ID:', postId);
     return postId;
+  };
+
+  const getUserId = () => {
+    const userId = post.user.id || post.user._id || post.user.userId;
+    console.log('Resolved User ID:', userId);
+    return userId;
+  };
+
+  const handleProfileClick = () => {
+    const userId = getUserId();
+    if (!userId) {
+      console.error('Invalid user ID:', post.user);
+      alert('Cannot navigate to profile: Invalid user ID.');
+      return;
+    }
+    navigate(`/friend/${userId}`); // Navigate to user's profile
   };
 
   const handleLike = async () => {
@@ -71,11 +92,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
     }
 
     try {
-      // Optimistically update the UI
       setLiked(!liked);
       setLikesCount(prev => (liked ? prev - 1 : prev + 1));
 
-      // Make API call to like/unlike the post
       const response = await axios.post(
         `http://localhost:5000/api/posts/${postId}/like`,
         {},
@@ -88,7 +107,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
       );
       console.log('Like API response:', response.data);
 
-      // Update state with server response
       setLikesCount(response.data.likesCount);
       setLiked(response.data.isLiked);
     } catch (error: any) {
@@ -109,49 +127,48 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
         console.error('Unexpected error:', error.message);
         alert('Failed to like/unlike post. Please try again.');
       }
-      // Revert optimistic update on error
       setLiked(liked);
       setLikesCount(prev => (liked ? prev + 1 : prev - 1));
     }
   };
 
-  const handleSave = async () => {
-    const token = getToken();
-    const postId = getPostId();
-    console.log('User object in handleSave:', user);
-    if (!user || !token) {
-      console.error('No user or token found. User:', user, 'Token:', token);
-      alert('Session error: Please log in again to save a post.');
-      return;
-    }
-    if (!postId) {
-      console.error('Invalid post ID:', post);
-      alert('Cannot save post: Invalid post ID.');
-      return;
-    }
+  // const handleSave = async () => {
+  //   const token = getToken();
+  //   const postId = getPostId();
+  //   console.log('User object in handleSave:', user);
+  //   if (!user || !token) {
+  //     console.error('No user or token found. User:', user, 'Token:', token);
+  //     alert('Session error: Please log in again to save a post.');
+  //     return;
+  //   }
+  //   if (!postId) {
+  //     console.error('Invalid post ID:', post);
+  //     alert('Cannot save post: Invalid post ID.');
+  //     return;
+  //   }
 
-    try {
-      setSaved(!saved);
-      await axios.post(
-        `http://localhost:5000/api/posts/${postId}/save`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      onSave?.(postId);
-    } catch (error: any) {
-      console.error('Error saving/unsaving post:', error);
-      if (error.response?.status === 401) {
-        console.error('Unauthorized: Invalid or expired token:', token);
-        alert('Session expired. Please log in again.');
-      }
-      setSaved(saved); // Revert on error
-    }
-  };
+  //   try {
+  //     setSaved(!saved);
+  //     await axios.post(
+  //       `http://localhost:5000/api/posts/${postId}/save`,
+  //       {},
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       }
+  //     );
+  //     onSave?.(postId);
+  //   } catch (error: any) {
+  //     console.error('Error saving/unsaving post:', error);
+  //     if (error.response?.status === 401) {
+  //       console.error('Unauthorized: Invalid or expired token:', token);
+  //       alert('Session expired. Please log in again.');
+  //     }
+  //     setSaved(saved);
+  //   }
+  // };
 
   const handleDelete = async () => {
     const token = getToken();
@@ -193,7 +210,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
           <img
             src={post.user.profilePicture}
             alt={post.user.username}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover"
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover cursor-pointer"
+            onClick={handleProfileClick} // Add click handler
           />
           <div>
             <h3 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white">
@@ -207,21 +225,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
           </div>
         </div>
         <div className="relative">
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1"
-          >
-            <MoreHorizontal size={20} />
-          </button>
           {showMenu && (
             <div className="absolute right-0 top-8 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-2 z-10 min-w-[120px]">
-              <button
-                onClick={handleSave}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center space-x-2"
-              >
-                <Bookmark size={16} />
-                <span>{saved ? 'Unsave' : 'Save'}</span>
-              </button>
               {post.isOwner && (
                 <button
                   onClick={handleDelete}
@@ -263,13 +268,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
             >
               <Heart size={20} fill={liked ? 'currentColor' : 'none'} />
               <span className="text-sm md:text-base">{likesCount}</span>
-            </button>
-            <button className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors">
-              <MessageCircle size={20} />
-              <span className="text-sm md:text-base">{commentsCount}</span>
-            </button>
-            <button className="text-gray-500 dark:text-gray-400 hover:text-green-500 transition-colors">
-              <Share size={20} />
             </button>
           </div>
           <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">

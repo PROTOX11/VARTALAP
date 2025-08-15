@@ -66,12 +66,6 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="absolute top-4 right-4 z-10 flex items-center space-x-2">
-          <button
-            onClick={() => navigate('/settings')}
-            className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Settings size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
           <ThemeToggle />
         </div>
 
