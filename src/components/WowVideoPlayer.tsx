@@ -86,19 +86,6 @@ const WowVideoPlayer: React.FC<WowVideoPlayerProps> = ({
         )}
       </div>
 
-      <div className="absolute top-4 right-4 flex flex-col space-y-2">
-        <button
-          onClick={toggleMute}
-          className="p-2 bg-black/50 rounded-full backdrop-blur-sm"
-        >
-          {isMuted ? (
-            <VolumeX size={20} className="text-white" />
-          ) : (
-            <Volume2 size={20} className="text-white" />
-          )}
-        </button>
-      </div>
-
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
         <div className="flex items-end justify-between">
           <div className="flex-1 mr-4">
@@ -119,6 +106,18 @@ const WowVideoPlayer: React.FC<WowVideoPlayerProps> = ({
           </div>
 
           <div className="flex flex-col items-center space-y-4">
+            <button
+              onClick={toggleMute}
+              className="flex flex-col items-center"
+            >
+              <div className="p-3 bg-black/50 rounded-full backdrop-blur-sm">
+                {isMuted ? (
+                  <VolumeX size={24} className="text-white" />
+                ) : (
+                  <Volume2 size={24} className="text-white" />
+                )}
+              </div>
+            </button>
             <button
               onClick={() => handleLike(wow.id)}
               className="flex flex-col items-center space-y-1"
