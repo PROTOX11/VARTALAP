@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Camera, Edit3, Settings, Grid, Bookmark } from 'lucide-react';
+import { ArrowLeft, Camera, Edit3, Settings, Grid, Bookmark, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
@@ -8,7 +8,7 @@ import PostCard from '../components/PostCard';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { user, updateProfile, updateUsername, deletePost } = useAuth();
+  const { user, updateProfile, updateUsername, deletePost, logout } = useAuth();
   const [isEditingAbout, setIsEditingAbout] = useState(false);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [aboutText, setAboutText] = useState(user?.about || '');
@@ -49,6 +49,11 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const { userPosts } = useAuth();
   const savedPosts = userPosts.filter(post => user?.savedPosts.includes(post.id));
 
@@ -66,6 +71,13 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="absolute top-4 right-4 z-10 flex items-center space-x-2">
+          <button
+            onClick={handleLogout}
+            className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Logout"
+          >
+            <LogOut size={20} className="text-gray-700 dark:text-gray-300 md:size=24" />
+          </button>
           <ThemeToggle />
         </div>
 
@@ -149,12 +161,6 @@ const Profile: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4">
-                <button className="px-4 md:px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                  Update profile
-                </button>
-                <button className="px-4 md:px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                  Share profile
-                </button>
               </div>
             </div>
           </div>
