@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+const API_URL = import.meta.env.VITE_API_URL
+
 
 interface SocketContextType {
   socket: Socket | null;
@@ -21,7 +23,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     if (user && user._id && typeof user._id === 'string' && user._id.length === 24) {
-      const newSocket = io('http://localhost:5000', {
+      const newSocket = io(`${API_URL}`, {
         transports: ['websocket', 'polling'],
         withCredentials: true,
       });

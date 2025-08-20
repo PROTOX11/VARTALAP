@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-
+const API_URL = import.meta.env.VITE_API_URL
 interface Post {
   id?: string;
   _id?: string;
@@ -92,7 +92,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
       setLikesCount(prev => (liked ? prev - 1 : prev + 1));
 
       const response = await axios.post(
-        `http://localhost:5000/api/posts/${postId}/like`,
+        `${API_URL}/api/posts/${postId}/like`,
         {},
         {
           headers: {
@@ -144,7 +144,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   //   try {
   //     setSaved(!saved);
   //     await axios.post(
-  //       `http://localhost:5000/api/posts/${postId}/save`,
+  //       `${API_URL}/api/posts/${postId}/save`,
   //       {},
   //       {
   //         headers: {
@@ -179,7 +179,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/posts/${postId}`, {
+      await axios.delete(`${API_URL}/api/posts/${postId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',

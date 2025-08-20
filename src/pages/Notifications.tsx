@@ -7,6 +7,7 @@ import MobileNavigation from '../components/MobileNavigation';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+const API_URL = import.meta.env.VITE_API_URL
 
 interface Notification {
   _id: string;
@@ -32,7 +33,7 @@ const Notifications: React.FC = () => {
 
     if (!user || (!user.id && !user._id)) return;
 
-    const socket = io('http://localhost:5000');
+    const socket = io(`${API_URL}`);
     socket.emit('join', user.id || user._id);
 
     socket.on('notification', (newNotification) => {
@@ -49,7 +50,7 @@ const Notifications: React.FC = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get(`http://localhost:5000/api/notifications`, {
+      const { data } = await axios.get(`${API_URL}/api/notifications`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -66,7 +67,7 @@ const Notifications: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(
-        `http://localhost:5000/api/notifications/${notificationId}/read`,
+        `${API_URL}/api/notifications/${notificationId}/read`,
         {},
         {
           headers: {
@@ -86,7 +87,7 @@ const Notifications: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(
-        'http://localhost:5000/api/notifications/read-all',
+        `${API_URL}/api/notifications/read-all`,
         {},
         {
           headers: {
@@ -103,7 +104,7 @@ const Notifications: React.FC = () => {
   const fetchSenderId = async (username: string): Promise<string | null> => {
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.get(`http://localhost:5000/api/users/all-users`, {
+      const { data } = await axios.get(`${API_URL}/api/users/all-users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const matchedUser = data.find((u: any) => u.username.toLowerCase() === username.toLowerCase());
@@ -117,7 +118,7 @@ const Notifications: React.FC = () => {
   const fetchPostId = async (notificationId: string, userId: string): Promise<string | null> => {
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.get(`http://localhost:5000/api/posts/me`, { // Updated to /api/posts/me
+      const { data } = await axios.get(`${API_URL}/api/posts/me`, { // Updated to /api/posts/me
         headers: { Authorization: `Bearer ${token}` },
       });
       // Filter posts by userId (recipient) and check if notificationId is in likes or comments
