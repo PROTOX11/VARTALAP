@@ -80,9 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserPosts = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
-
     try {
-      const res = await fetch(`${API_URL}/api/posts/my-post`, {
+      const res = await fetch(`${API_URL}/api/posts/my-posts`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {

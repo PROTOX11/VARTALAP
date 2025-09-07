@@ -13,19 +13,26 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/posts/feed', {
+        if (!token) {
+          console.error('No token found');
+          setPosts([]);
+          return;
+        }
+        const res = await fetch(`${API_URL}/api/posts/feed`, { // Use API_URL
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await res.json();
           setPosts(data);
         } else {
+          console.error('Fetch posts failed with status:', res.status);
           setPosts([]);
         }
       } catch (error) {
@@ -105,7 +112,7 @@ const Dashboard: React.FC = () => {
               onClick={() => navigate('/chat')}
               className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors">
               <MessageCircle size={24} />
-              </button>
+            </button>
             <ThemeToggle />
             <button
               onClick={() => navigate('/profile')}
