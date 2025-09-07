@@ -21,20 +21,22 @@ const Dashboard: React.FC = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          console.error('No token found');
+          console.error('No token found in localStorage');
           setPosts([]);
           return;
         }
-        const res = await fetch(`${API_URL}/api/posts/feed`, { // Use API_URL
-          headers: { 'Authorization': `Bearer ${token}` },
+        const res = await fetch(`${API_URL}/api/posts/feed`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.ok) {
-          const data = await res.json();
-          setPosts(data);
-        } else {
-          console.error('Fetch posts failed with status:', res.status);
+        if (!res.ok) {
+          console.error(`Fetch failed with status: ${res.status} ${res.statusText}`);
+          const errorData = await res.json().catch(() => ({}));
+          console.error('Error details:', errorData);
           setPosts([]);
+          return;
         }
+        const data = await res.json();
+        setPosts(data);
       } catch (error) {
         console.error('Failed to fetch posts:', error);
         setPosts([]);
@@ -42,6 +44,7 @@ const Dashboard: React.FC = () => {
         setLoading(false);
       }
     };
+
 
     if (user) {
       fetchPosts();

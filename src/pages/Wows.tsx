@@ -37,35 +37,52 @@ const Wows: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const { user } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 
   useEffect(() => {
     const fetchAllUsers = async () => {
       try {
-        const res = await fetch('/api/users/all-users', {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          return;
+        }
+        const res = await fetch(`${API_URL}/api/users/all-users`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         if (res.ok) {
           const data = await res.json();
           setAllUsers(data);
         } else {
-          console.error('Failed to fetch all users for follow data.');
+          console.error(`Fetch failed with status: ${res.status} ${res.statusText}`);
+          const errorData = await res.json().catch(() => ({}));
+          console.error('Error details:', errorData);
         }
       } catch (err) {
         console.error('Error fetching all users:', err);
       }
     };
     fetchAllUsers();
-  }, []);
+  }, [API_URL]);
+
 
   useEffect(() => {
     const fetchVideos = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/posts/all-videos', {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          setWows([]);
+          setLoading(false);
+          return;
+        }
+        const res = await fetch(`${API_URL}/api/posts/all-videos`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         if (res.ok) {
@@ -92,8 +109,9 @@ const Wows: React.FC = () => {
             })),
           );
         } else {
-          const errorText = await res.text();
-          console.error('Failed to fetch videos:', res.status, errorText);
+          console.error(`Fetch failed with status: ${res.status} ${res.statusText}`);
+          const errorData = await res.json().catch(() => ({}));
+          console.error('Error details:', errorData);
           setWows([]);
         }
       } catch (error) {
@@ -104,7 +122,8 @@ const Wows: React.FC = () => {
       }
     };
     fetchVideos();
-  }, [user]);
+  }, [user, API_URL]);
+
 
   const isFollowing = (person: any) => {
     const upToDatePerson = allUsers.find(
@@ -119,15 +138,20 @@ const Wows: React.FC = () => {
       console.error('Cannot follow/unfollow: Person ID is undefined.');
       return;
     }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return;
+    }
 
     const currentlyFollowing = isFollowing(personToFollow);
-    const url = `/api/users/${currentlyFollowing ? 'unfollow' : 'follow'}/${personId}`;
+    const url = `${API_URL}/api/users/${currentlyFollowing ? 'unfollow' : 'follow'}/${personId}`;
 
     try {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -166,13 +190,15 @@ const Wows: React.FC = () => {
           }),
         );
       } else {
-        const errorText = await res.text();
-        console.error('Failed to toggle follow status:', res.status, errorText);
+        console.error(`Fetch failed with status: ${res.status} ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Error details:', errorData);
       }
     } catch (err) {
       console.error('Fetch error during follow toggle:', err);
     }
   };
+
 
   const togglePlayPause = () => {
     setIsPlaying(!isPlaying);
@@ -187,6 +213,12 @@ const Wows: React.FC = () => {
     const wowIndex = wows.findIndex(wow => wow.id === wowId);
     if (wowIndex === -1) return;
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return;
+    }
+
     const currentLikes = wows[wowIndex].likes;
     const currentIsLiked = wows[wowIndex].isLiked;
 
@@ -194,38 +226,42 @@ const Wows: React.FC = () => {
       prev.map((wow, index) =>
         index === wowIndex
           ? {
-              ...wow,
-              isLiked: !currentIsLiked,
-              likes: currentIsLiked ? currentLikes - 1 : currentLikes + 1,
-            }
+            ...wow,
+            isLiked: !currentIsLiked,
+            likes: currentIsLiked ? currentLikes - 1 : currentLikes + 1,
+          }
           : wow,
       ),
     );
 
     try {
-      const url = `/api/posts/${currentIsLiked ? 'unlike' : 'like'}/${wowId}`;
+      const url = `${API_URL}/api/posts/${wowId}/like`;
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!res.ok) {
+        // Revert optimistic update
         setWows(prev =>
           prev.map((wow, index) =>
             index === wowIndex
               ? {
-                  ...wow,
-                  isLiked: currentIsLiked,
-                  likes: currentLikes,
-                }
+                ...wow,
+                isLiked: currentIsLiked,
+                likes: currentLikes,
+              }
               : wow,
           ),
         );
-        console.error('Failed to toggle like status:', res.status, await res.text());
+        console.error(`Fetch failed with status: ${res.status} ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Error details:', errorData);
       }
     } catch (error) {
+      // Revert optimistic update
       setWows(prev =>
         prev.map((wow, index) =>
           index === wowIndex
@@ -240,6 +276,7 @@ const Wows: React.FC = () => {
       console.error('Error toggling like status:', error);
     }
   };
+
 
   useEffect(() => {
     const container = scrollContainerRef.current;

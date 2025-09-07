@@ -105,16 +105,19 @@ router.post('/unfollow/:userId', auth, async (req, res) => {
   }
 });
 
-// Get all users from AllUser collection (for search page)
+// @route   GET api/users/all-users
+// @desc    Get all users
+// @access  Private
 router.get('/all-users', auth, async (req, res) => {
   try {
-    const users = await AllUser.find().select('-__v');
+    const users = await User.find({}, 'username profilePicture followers').select('-password');
     res.json(users);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error while fetching all users' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Update Profile
 router.put('/profile', [

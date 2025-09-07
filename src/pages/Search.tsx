@@ -17,77 +17,88 @@ const Search: React.FC = () => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
-    if (activeTab === 'people') {
+    const fetchUsers = async () => {
+      if (activeTab !== 'people') {
+        setPeople([]);
+        return;
+      }
       setLoading(true);
-      const fetchUsers = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            console.error('No token found in localStorage');
-            setPeople([]);
-            setLoading(false);
-            return;
-          }
-          const res = await fetch(`${API_URL}/api/users/all-users`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (!res.ok) {
-            const text = await res.text();
-            console.error('Failed to fetch users:', res.status, text);
-            setPeople([]);
-            setLoading(false);
-            return;
-          }
-          const data = await res.json();
-          setPeople(data);
-          setLoading(false);
-        } catch (err) {
-          console.error('Fetch error:', err);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
           setPeople([]);
-          setLoading(false);
+          return;
         }
-      };
-      fetchUsers();
-    }
-  }, [activeTab]);
+        const res = await fetch(`${API_URL}/api/users/all-users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          console.error(`Fetch failed with status: ${res.status} ${res.statusText}`);
+          const errorData = await res.json().catch(() => ({}));
+          console.error('Error details:', errorData);
+          setPeople([]);
+          return;
+        }
+        const data = await res.json();
+        setPeople(data);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        setPeople([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [activeTab, API_URL]);
+
 
   const isFollowing = (person: any) => {
     return user && person.followers && person.followers.includes(user.id);
   };
 
   const handleFollowToggle = async (person: any) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return;
+    }
     const url = `${API_URL}/api/users/${isFollowing(person) ? 'unfollow' : 'follow'}/${person.userId || person._id}`;
     try {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      if (res.ok) {
-        setPeople(people =>
-          people.map(p =>
-            (p.userId || p._id) === (person.userId || person._id)
-              ? {
-                  ...p,
-                  followers: isFollowing(person)
-                    ? p.followers.filter((id: string) => user && id !== user.id)
-                    : user
-                      ? [...(p.followers || []), user.id]
-                      : p.followers || [],
-                }
-              : p
-          )
-        );
-      } else {
-        console.error('Follow/unfollow failed:', res.status);
+      if (!res.ok) {
+        console.error(`Follow/unfollow failed with status: ${res.status} ${res.statusText}`);
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Error details:', errorData);
+        return;
       }
+      setPeople(people =>
+        people.map(p =>
+          (p.userId || p._id) === (person.userId || person._id)
+            ? {
+                ...p,
+                followers: isFollowing(person)
+                  ? p.followers.filter((id: string) => user && id !== user.id)
+                  : user
+                    ? [...(p.followers || []), user.id]
+                    : p.followers || [],
+              }
+            : p
+        )
+      );
     } catch (error) {
       console.error('Follow/unfollow error:', error);
     }
   };
+
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
