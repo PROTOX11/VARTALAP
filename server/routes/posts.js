@@ -9,10 +9,14 @@ const router = express.Router();
 const { createLikeNotification } = require('../controller/notificationController');
 
 // Create Post
-router.post('/', [auth, upload.single('media')], [
-  body('type').isIn(['text', 'image', 'Wow', 'video']),
-  body('content').optional().trim()
-], async (req, res) => {
+router.post('/',
+  [
+    auth,
+    upload.single('media'),
+    body('type').isIn(['text', 'image', 'Wow', 'video']),
+    body('content').optional().trim()
+  ],
+  async (req, res) => {
   try {
     if (req.file) {
       const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/ico'];
