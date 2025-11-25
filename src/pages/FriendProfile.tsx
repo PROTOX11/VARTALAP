@@ -9,6 +9,8 @@ type FriendPost = any;
 type FriendUser = any;
 
 const FriendProfile: React.FC = () => {
+  // Runtime API URL fallback when VITE_API_URL isn't provided at build time
+  const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:6500`;
   const navigate = useNavigate();
   const { friendId } = useParams();
   const { user, setUser } = useAuth();
@@ -26,7 +28,7 @@ const FriendProfile: React.FC = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`/api/users/profile/${friendId}`, {
+        const res = await fetch(`${API_URL}/api/users/profile/${friendId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -60,7 +62,7 @@ const FriendProfile: React.FC = () => {
     setIsFollowing(!isFollowing);
 
     try {
-      const url = `/api/users/${isFollowing ? 'unfollow' : 'follow'}/${friendData._id}`;
+      const url = `${API_URL}/api/users/${isFollowing ? 'unfollow' : 'follow'}/${friendData._id}`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }

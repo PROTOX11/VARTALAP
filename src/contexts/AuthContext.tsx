@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-const API_URL = import.meta.env.VITE_API_URL
-
+// Use Vite-provided API URL when available; otherwise fall back at runtime to
+// the same host but backend port 6500. This helps when the frontend is served
+// separately (e.g. Vite dev server on :5173) and VITE_API_URL wasn't set.
+const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:6500`;
 export interface User {
   token: any;
   id: string;
@@ -165,7 +167,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (userData: any): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
+      const signupUrl = `${API_URL}/api/auth/register`;
+      console.log('Signup URL:', signupUrl);
+      console.log('Signup payload:', userData);
+
+      const response = await fetch(signupUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,9 +179,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(userData),
       });
 
-      const data = await response.json();
+      // Try to parse JSON body, but handle non-JSON (e.g. 500 HTML) gracefully
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        const text = await response.text().catch(() => null);
+        data = { messages: text || `HTTP ${response.status}` };
+      }
 
       if (!response.ok) {
+        console.error('Signup failed', response.status, data);
         toast.error(data.messages || 'Signup failed. Please try again.');
         return false;
       }

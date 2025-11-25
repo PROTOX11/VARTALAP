@@ -15,6 +15,8 @@ interface Message {
 }
 
 const Chat: React.FC = () => {
+  // Runtime API URL fallback when VITE_API_URL isn't provided at build time
+  const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:6500`;
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -31,7 +33,7 @@ const Chat: React.FC = () => {
       const fetchMessages = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`/api/message/${selectedUser.chatId}`, {
+          const res = await fetch(`${API_URL}/api/message/${selectedUser.chatId}`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
           if (res.ok) {
@@ -196,7 +198,7 @@ const Chat: React.FC = () => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem('token');
-                    const res = await fetch('/api/chat/create', {
+                    const res = await fetch(`${API_URL}/api/chat/create`, {
                       method: 'POST',
                       headers: {
                         'Authorization': `Bearer ${token}`,

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-const API_URL = import.meta.env.VITE_API_URL
+// Runtime fallback for API URL when VITE_API_URL is not set
+const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:6500`;
 
 
 interface SocketContextType {
@@ -22,8 +23,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (user && user._id && typeof user._id === 'string' && user._id.length === 24) {
-      const newSocket = io(`${API_URL}`, {
+    const userId = (user as any)?.id || (user as any)?._id;
+    if (userId && typeof userId === 'string' && userId.length > 0) {
+      const newSocket = io(API_URL, {
         transports: ['websocket', 'polling'],
         withCredentials: true,
       });
@@ -32,11 +34,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       newSocket.on('connect', () => {
         setIsConnected(true);
-        newSocket.emit('join', user._id);
+        newSocket.emit('join', userId);
       });
 
       newSocket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error.message);
+        console.error('Socket connection error:', error?.message || error);
         setIsConnected(false);
       });
 
@@ -49,10 +51,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsConnected(false);
         setSocket(null);
       };
-    } else {
-      console.warn('No valid user._id for socket connection:', user);
     }
-  }, [user, user?._id]);
+  }, [user]);
 
   const sendMessage = (receiverId: string, chatId: string, message: string) => {
     if (!socket || socket.disconnected) {
