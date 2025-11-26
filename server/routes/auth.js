@@ -33,8 +33,8 @@ router.post('/register', [
     });
 
     if (existingUser) {
-      return res.status(400).json({ 
-        message: 'User already exists with this email, username, or phone number' 
+      return res.status(400).json({
+        message: 'User already exists with this email, username, or phone number'
       });
     }
 
@@ -70,21 +70,22 @@ router.post('/register', [
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-// Login User
 router.post('/login', [
-  body('emailOrPhone').notEmpty(),
-  body('password').notEmpty()
+  body('emailOrPhone').notEmpty().withMessage("emailOrPhone is missing"),
+  body('password').notEmpty().withMessage("password is missing")
 ], async (req, res) => {
+
+  console.log("LOGIN BODY:", req.body);   // ✅ DEBUG
+
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log("VALIDATION ERRORS:", errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { emailOrPhone, password } = req.body;
 
-    // Find user by email or phone
     const user = await User.findOne({
       $or: [
         { email: emailOrPhone },
@@ -93,21 +94,22 @@ router.post('/login', [
       ]
     });
 
+    console.log("FOUND USER:", user ? user.email : "NOT FOUND");
+
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'User not found' });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
+    console.log("PASSWORD MATCH:", isMatch);
+
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Wrong password' });
     }
 
-    // Update online status
     user.isOnline = true;
     await user.save();
 
-    // Generate token
     const token = generateToken(user._id);
 
     res.json({
@@ -115,8 +117,9 @@ router.post('/login', [
       token,
       user
     });
+
   } catch (error) {
-    console.error(error);
+    console.error("LOGIN ERROR:", error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -127,7 +130,7 @@ router.get('/me', auth, async (req, res) => {
     const user = await User.findById(req.user._id)
       .populate('friends', 'username profilePicture isOnline lastSeen')
       .populate('savedPosts');
-    
+
     res.json(user);
   } catch (error) {
     console.error(error);
