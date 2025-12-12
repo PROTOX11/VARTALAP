@@ -1,4 +1,4 @@
-🚀 Project Title & Tagline
+🚀VARTALAP
 ========================
 **Vartalap Social Media**
 _A platform to connect with people and share your thoughts_
