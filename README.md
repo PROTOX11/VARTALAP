@@ -62,13 +62,22 @@ To test the project, follow these steps:
 
 📸 Screenshots
 ----------------
-https://drive.google.com/file/d/1fbBZyDImTONLcPojy8VT0C0bT-TEqHN5/view?usp=drive_link
-https://drive.google.com/file/d/1lHEUyfC_sWuWf0Q3ojtvZ4kDVO-Slwcp/view?usp=drive_link
-https://drive.google.com/file/d/1YQdqs2l8KpVWKzprZf-s6PqjqX3yaNTi/view?usp=drive_link
-https://drive.google.com/file/d/1hDNJAooy9iojWno9kROxauBzLBG9SQb5/view?usp=drive_link
-https://drive.google.com/file/d/13fb0GkbXyS7IdbSAjjynLsZCInPC3hUW/view?usp=drive_link
-https://drive.google.com/file/d/1YrxRFdjm5CuFY3l4_wejQnAG2tPuZiIh/view?usp=drive_link
-https://drive.google.com/file/d/1SQzG8VOnV1stG0a3-LN_L9hZMZJSY-sF/view?usp=drive_link
+## Screenshots
+
+![Screenshot1](https://drive.google.com/uc?export=view&id=1fbBzyDImTONLcPojy8VTOC0bT-TeqHN5)
+
+![Screenshot2](https://drive.google.com/uc?export=view&id=1HEUyFc_sWuWfOQ3ojtvZ4kDVO-Slwcp)
+
+![Screenshot3](https://drive.google.com/uc?export=view&id=1Y0dqs2l8KbJWKzprZf-s6PqiqXJvaNTj)
+
+![Screenshot4](https://drive.google.com/uc?export=view&id=1hDNJAooy9iojWno9kROxauBzLBG9SQb5)
+
+![Screenshot5](https://drive.google.com/uc?export=view&id=13fb0GkbXyS7ldbSAjynLsZCInPC3hUW)
+
+![Screenshot6](https://drive.google.com/uc?export=view&id=1YrxRFdjm5CuFY3l4_wejQnAG2tPuZilh)
+
+![Screenshot7](https://drive.google.com/uc?export=view&id=1SQzG8VOnV1stG0a3-LN_L9hZMZJSY-sF)
+
 
 📦 API Reference
 ----------------
