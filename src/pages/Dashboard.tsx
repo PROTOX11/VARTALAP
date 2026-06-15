@@ -58,36 +58,39 @@ const Dashboard: React.FC = () => {
 
       <div className="flex-1 flex flex-col md:flex-row md:ml-64">
         {/* Mobile Header */}
-        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between fixed z-10">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 w-full z-10">
           <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">VARTALAP</h1>
-          <div className="flex items-center space-x-4 pl-12">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => navigate('/notifications')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-full hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
             >
-              <Bell size={24} />
+              <Bell size={22} />
             </button>
             <button
               onClick={() => navigate('/chat')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-full hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
             >
-              <MessageCircle size={24} />
+              <MessageCircle size={22} />
             </button>
             <ThemeToggle />
             <button
               onClick={() => navigate('/profile')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-full hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
             >
-              <User size={24} />
+              <User size={22} />
             </button>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-4 md:p-6 pb-20 md:pb-6">
-          <div className="mb-4 md:mb-6">
-            <FriendsList friends={user?.friends || []} />
-          </div>
+        {/* Main Content — pt-16 clears the fixed mobile header */}
+        <div className="flex-1 p-4 md:p-6 pt-16 md:pt-6 pb-20 md:pb-6">
+          {/* Friends strip — only shows when user has friends */}
+          {user?.friends && user.friends.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 mb-4 mt-2 shadow-sm">
+              <FriendsList friends={user.friends} />
+            </div>
+          )}
 
           <div className="space-y-4 md:space-y-6">
             {loading ? (

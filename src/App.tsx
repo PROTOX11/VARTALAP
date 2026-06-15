@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -25,6 +25,32 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return !user ? <>{children}</> : <Navigate to="/dashboard" />;
 };
 
+// Inner component — needs Router context to call useLocation
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    // key=pathname → React unmounts/remounts this div on every navigation
+    // page-enter class (defined in index.css) plays the entrance animation
+    <div key={location.pathname} className="page-enter">
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/friend/:friendId" element={<ProtectedRoute><FriendProfile /></ProtectedRoute>} />
+        <Route path="/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+        <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/Wows" element={<ProtectedRoute><Wows /></ProtectedRoute>} />
+        <Route path="/wow" element={<ProtectedRoute><Wows /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+      </Routes>
+    </div>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -42,97 +68,7 @@ function App() {
                   },
                 }}
               />
-              <Routes>
-                <Route path="/" element={<Navigate to="/login" />} />
-                <Route
-                  path="/login"
-                  element={
-                    <PublicRoute>
-                      <Login />
-                    </PublicRoute>
-                  }
-                />
-                <Route
-                  path="/signup"
-                  element={
-                    <PublicRoute>
-                      <Signup />
-                    </PublicRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/friend/:friendId"
-                  element={
-                    <ProtectedRoute>
-                      <FriendProfile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/create"
-                  element={
-                    <ProtectedRoute>
-                      <CreatePost />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/search"
-                  element={
-                    <ProtectedRoute>
-                      <Search />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/notifications"
-                  element={
-                    <ProtectedRoute>
-                      <Notifications />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/Wows"
-                  element={
-                    <ProtectedRoute>
-                      <Wows />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/chat"
-                  element={
-                    <ProtectedRoute>
-                      <Chat />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/wow"
-                  element={
-                    <ProtectedRoute>
-                      <Wows />
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
+              <AnimatedRoutes />
             </div>
           </Router>
         </SocketProvider>

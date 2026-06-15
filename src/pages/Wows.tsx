@@ -336,7 +336,7 @@ const Wows: React.FC = () => {
       </div>
 
       <div className="flex-1 relative overflow-hidden">
-        <div className="md:hidden absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-4 flex items-center justify-between">
+        <div className="md:hidden absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-4 flex items-center justify-between gap-4">
           <button
             onClick={() => navigate('/dashboard')}
             className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
@@ -376,30 +376,7 @@ const Wows: React.FC = () => {
                 toggleMute={toggleMute}
                 handleLike={handleLike}
               />
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                <div className="flex items-end justify-between">
-                  <div className="flex-1 mr-4">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-white font-semibold">{wowItem.user?.username}</span>
-                      {user && wowItem.user && user.id !== (wowItem.user.userId || wowItem.user._id) && (
-                        <button
-                          className={`px-2 py-0.5 rounded-lg font-medium transition-colors ${
-                            isFollowing(wowItem.user)
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                              : 'bg-purple-600 text-white hover:bg-purple-700'
-                          }`}
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleFollowToggle(wowItem.user);
-                          }}
-                        >
-                          {isFollowing(wowItem.user) ? 'Unfollow' : 'Follow'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+
             </div>
           ))}
         </div>

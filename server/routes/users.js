@@ -4,7 +4,7 @@ const User = require('../models/User');
 const AllUser = require('../models/AllUser');
 const Post = require('../models/Post');
 const auth = require('../middleware/auth');
-const upload = require('../cloudinary');
+const { upload, uploadToCloudinary } = require('../cloudinary');
 const { createFollowNotification } = require('../controller/notificationController');
 
 const router = express.Router();
@@ -135,16 +135,25 @@ router.put('/profile', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const updates = req.body;
+    const updates = { ...req.body };
+
+    // Upload images to Cloudinary from memory buffer
     if (req.files) {
-      if (req.files.profilePicture) {
-        updates.profilePicture = req.files.profilePicture[0].path;
-      }
-      if (req.files.coverPhoto) {
-        updates.coverPhoto = req.files.coverPhoto[0].path;
+      try {
+        if (req.files.profilePicture?.[0]) {
+          const f = req.files.profilePicture[0];
+          updates.profilePicture = await uploadToCloudinary(f.buffer, f.mimetype, 'vartalap-profiles');
+        }
+        if (req.files.coverPhoto?.[0]) {
+          const f = req.files.coverPhoto[0];
+          updates.coverPhoto = await uploadToCloudinary(f.buffer, f.mimetype, 'vartalap-covers');
+        }
+      } catch (uploadErr) {
+        console.error('Cloudinary upload error:', uploadErr);
+        return res.status(500).json({ message: 'Image upload failed. Please try again.' });
       }
     }
-    
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
       updates,
@@ -166,6 +175,7 @@ router.put('/profile', [
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // for all user
 router.get('/all', auth, async (req, res) => {

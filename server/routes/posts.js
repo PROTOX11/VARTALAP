@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const upload = require('../cloudinary');
+const { upload, uploadToCloudinary } = require('../cloudinary');
 const Notification = require('../models/Notification');
 const router = express.Router();
 const { createLikeNotification } = require('../controller/notificationController');
@@ -18,23 +18,12 @@ router.post('/',
   ],
   async (req, res) => {
   try {
-    if (req.file) {
-      const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/ico'];
-      const allowedVideoTypes = ['video/mp4', 'video/mkv'];
-      const { mimetype } = req.file;
-
-      if (!allowedImageTypes.includes(mimetype) && !allowedVideoTypes.includes(mimetype)) {
-        return res.status(400).json({ message: 'Invalid file type. Only images (jpg, jpeg, png, ico) and videos (mp4, mkv) are allowed.' });
-      }
-    }
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { type, content, location } = req.body;
-
 
     const postData = {
       user: req.user._id,
@@ -43,16 +32,26 @@ router.post('/',
       location,
     };
 
+    // If a file was uploaded, stream it to Cloudinary from memory buffer
     if (req.file) {
-      if (type === 'video') {
-        postData.video = req.file.path;
-      } else {
-        postData.image = req.file.path;
+      try {
+        const url = await uploadToCloudinary(
+          req.file.buffer,
+          req.file.mimetype,
+          'vartalap-posts'
+        );
+        if (type === 'video') {
+          postData.video = url;
+        } else {
+          postData.image = url;
+        }
+      } catch (uploadErr) {
+        console.error('Cloudinary upload error:', uploadErr);
+        return res.status(500).json({ message: 'Image/video upload failed. Please try again.' });
       }
     }
 
     const post = new Post(postData);
-
     await post.save();
     await post.populate('user', 'username profilePicture');
 
@@ -91,16 +90,18 @@ router.get('/feed', auth, async (req, res) => {
       isActive: true
     })
       .populate('user', 'username profilePicture')
-      .populate('likes.user', 'username')
       .populate('comments.user', 'username profilePicture')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const postsWithIsLiked = posts.map(post => ({
-      ...post.toJSON(),
-      isLiked: post.likes.some(like => like.equals(req.user._id)),
-    }));
+    // Build isLiked BEFORE toJSON() so Mongoose ObjectId methods are available
+    const currentUserId = req.user._id.toString();
+    const postsWithIsLiked = posts.map(post => {
+      const plain = post.toJSON();
+      plain.isLiked = post.likes.some(likeId => likeId.toString() === currentUserId);
+      return plain;
+    });
 
     res.json(postsWithIsLiked);
   } catch (error) {

@@ -9,33 +9,34 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
+  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
   return context;
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
+  // Sync dark class to <html> — idempotent, safe to call after startViewTransition too
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setIsDark(savedTheme === 'dark');
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  }, []);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-  };
+  // Plain setter — the View Transition is handled by ThemeToggle
+  const toggleTheme = () => setIsDark(prev => !prev);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      <div className={isDark ? 'dark' : ''}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 };

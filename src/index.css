@@ -2,12 +2,209 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Scrollbar hide ─────────────────────────────── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.hide-scrollbar::-webkit-scrollbar {
-    display: none;
+/* ── Page transition animation ─────────────────── */
+@keyframes page-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+.page-enter {
+  animation: page-enter 250ms ease-out both;
+  min-height: 100dvh;
+  /* NOTE: Do NOT add will-change:transform or any transform here —
+     it would create a new CSS containing block and break position:fixed
+     on child elements like MobileNavigation. */
 }
+
+/* ════════════════════════════════════════════════
+   CSS Design Tokens  (oklch — perceptually uniform)
+   ════════════════════════════════════════════════ */
+:root {
+  /* Backgrounds */
+  --background:      oklch(0.97 0.012 285);
+  --foreground:      oklch(0.18 0.04 285);
+
+  /* Cards / Surfaces */
+  --card:            oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.04 285);
+
+  /* Muted */
+  --muted:           oklch(0.94 0.015 285);
+  --muted-foreground:oklch(0.52 0.025 285);
+
+  /* Brand */
+  --primary:         oklch(0.46 0.22 285);
+  --primary-light:   oklch(0.60 0.20 285);
+  --primary-glow:    oklch(0.55 0.22 285 / 0.35);
+
+  /* Borders & Inputs */
+  --border:          oklch(0.87 0.025 285);
+  --input:           oklch(0.87 0.025 285);
+  --input-focus:     oklch(0.55 0.22 285);
+  --input-focus-shadow: oklch(0.55 0.22 285 / 0.14);
+  --input-error:     oklch(0.59 0.20 15);
+
+  /* Misc */
+  --ring:            oklch(0.55 0.22 285);
+  --toast-bg:        oklch(1 0 0);
+  --toast-color:     oklch(0.18 0.04 285);
+}
+
+.dark {
+  /* Backgrounds */
+  --background:      oklch(0.10 0.035 285);
+  --foreground:      oklch(0.95 0.008 285);
+
+  /* Cards / Surfaces */
+  --card:            oklch(0.15 0.035 285);
+  --card-foreground: oklch(0.95 0.008 285);
+
+  /* Muted */
+  --muted:           oklch(0.20 0.03 285);
+  --muted-foreground:oklch(0.60 0.025 285);
+
+  /* Brand */
+  --primary:         oklch(0.62 0.20 285);
+  --primary-light:   oklch(0.72 0.18 285);
+  --primary-glow:    oklch(0.62 0.20 285 / 0.40);
+
+  /* Borders & Inputs */
+  --border:          oklch(0.24 0.04 285);
+  --input:           oklch(0.24 0.04 285);
+  --input-focus:     oklch(0.66 0.20 285);
+  --input-focus-shadow: oklch(0.66 0.20 285 / 0.20);
+  --input-error:     oklch(0.65 0.20 15);
+
+  /* Misc */
+  --ring:            oklch(0.66 0.20 285);
+  --toast-bg:        oklch(0.15 0.035 285);
+  --toast-color:     oklch(0.95 0.008 285);
+}
+
+/* ════════════════════════════════════════════════
+   Global smooth theme transition
+   (kept short so view-transition does the heavy work)
+   ════════════════════════════════════════════════ */
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+/* Only transition colors; skip for animated/motion elements */
+*:not(.shimmer-btn):not(.shimmer-btn-su):not([class*="animate-"]) {
+  transition:
+    background-color 0.3s cubic-bezier(0.4,0,0.2,1),
+    border-color     0.3s cubic-bezier(0.4,0,0.2,1),
+    color            0.2s cubic-bezier(0.4,0,0.2,1),
+    box-shadow       0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ════════════════════════════════════════════════
+   View Transition — circular wipe from toggle position
+   ════════════════════════════════════════════════ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* New page WIPES IN as a growing circle from the toggle button */
+::view-transition-new(root) {
+  animation: vt-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Old page fades out underneath */
+::view-transition-old(root) {
+  animation: vt-fade-out 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes vt-reveal {
+  from {
+    clip-path: circle(0% at var(--vt-origin-x, 95%) var(--vt-origin-y, 4%));
+  }
+  to {
+    clip-path: circle(150% at var(--vt-origin-x, 95%) var(--vt-origin-y, 4%));
+  }
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ════════════════════════════════════════════════
+   Auth page utility classes (themed via CSS vars)
+   ════════════════════════════════════════════════ */
+.auth-page        { background: var(--background); }
+.auth-heading     { color: var(--foreground); }
+.auth-label       { color: var(--foreground); }
+.auth-sublabel    { color: var(--muted-foreground); }
+.auth-divider     { background: var(--border); }
+
+.auth-input {
+  background:   var(--card);
+  color:        var(--card-foreground);
+  border-color: var(--border);
+}
+.auth-input::placeholder { color: var(--muted-foreground); }
+.auth-input:focus {
+  border-color: var(--input-focus) !important;
+  box-shadow:   0 0 0 3px var(--input-focus-shadow) !important;
+}
+.auth-input.error { border-color: var(--input-error) !important; }
+
+/* Auth brand sidebar — always purple, ignores dark mode */
+.auth-brand-panel {
+  background: linear-gradient(160deg, #5b21b6 0%, #7c3aed 55%, #6d28d9 100%);
+}
+.auth-feature-item { background: rgba(255,255,255,0.10); }
+.auth-feature-item:hover { background: rgba(255,255,255,0.18); }
+
+/* Shimmer button — kept separate so global transition doesn't interfere */
+.shimmer-btn, .shimmer-btn-su {
+  background: linear-gradient(
+    90deg,
+    oklch(0.46 0.22 285) 0%,
+    oklch(0.52 0.22 285) 30%,
+    oklch(0.72 0.18 285) 50%,
+    oklch(0.52 0.22 285) 70%,
+    oklch(0.46 0.22 285) 100%
+  );
+  background-size: 200% auto;
+  transition: background-position 0.4s ease, box-shadow 0.3s ease, transform 0.15s ease !important;
+}
+.shimmer-btn:hover:not(:disabled),
+.shimmer-btn-su:hover:not(:disabled) {
+  background-position: right center;
+  box-shadow: 0 8px 26px var(--primary-glow) !important;
+  transform: translateY(-1px);
+}
+.shimmer-btn:active:not(:disabled),
+.shimmer-btn-su:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px var(--primary-glow) !important;
+}
+
+.outline-auth-btn {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+  background: transparent;
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease !important;
+}
+.outline-auth-btn:hover {
+  background: var(--muted) !important;
+  box-shadow: 0 2px 12px var(--primary-glow);
+  transform: translateY(-1px);
+}
+.outline-auth-btn:active { transform: translateY(0); }

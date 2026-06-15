@@ -13,13 +13,13 @@ jobs:
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 163.245.215.37
+          host: vartalap.in.net
           username: root
           key: ${{ secrets.SSH_KEY }}
           script: |
             echo "Starting deployment..."
 
-            cd ~/vartalap/VARTALAP
+            cd ~/vart/VARTALAP
 
             echo "Pulling latest code"
             git pull origin main

@@ -239,14 +239,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           u8arr[n] = bstr.charCodeAt(n);
         }
         return new Blob([u8arr], { type: mime });
-      }
+      };
 
-      if (updates.username) formData.append('username', updates.username);
-      if (updates.about) formData.append('about', updates.about);
+      // Always append text fields if present
+      if (updates.username !== undefined) formData.append('username', updates.username);
+      if (updates.about !== undefined) formData.append('about', updates.about ?? '');
 
+      // Convert data-URL images → Blob for multipart upload
       if (updates.profilePicture && typeof updates.profilePicture === 'string' && updates.profilePicture.startsWith('data:')) {
         const blob = dataURLtoBlob(updates.profilePicture);
         if (blob) formData.append('profilePicture', blob, 'profile.jpg');
+        else toast.error('Could not process profile picture.');
       }
 
       if (updates.coverPhoto && typeof updates.coverPhoto === 'string' && updates.coverPhoto.startsWith('data:')) {
@@ -254,20 +257,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (blob) formData.append('coverPhoto', blob, 'cover.jpg');
       }
 
+      // Guard: nothing to send
       if ([...formData.entries()].length === 0) return true;
+
+      const toastId = toast.loading('Saving changes…');
 
       const response = await fetch(`${API_URL}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
+          // Do NOT set Content-Type — browser sets it with boundary for multipart
         },
         body: formData,
       });
 
       const data = await response.json();
+      toast.dismiss(toastId);
 
       if (!response.ok) {
-        toast.error(data.messages || 'Profile update failed.');
+        toast.error(data.message || data.messages || 'Profile update failed.');
         return false;
       }
 
