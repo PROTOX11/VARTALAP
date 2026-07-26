@@ -14,10 +14,10 @@ const generateToken = (userId) => {
 
 // Register User
 router.post('/register', [
-  body('username').isLength({ min: 3, max: 20 }).trim(),
+  body('username').isLength({ min: 3, max: 20 }).trim().matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores'),
   body('email').isEmail().normalizeEmail(),
-  body('phone').isMobilePhone(),
-  body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+  body('phone').matches(/^[+]?[\d\s\-\(\)]{10,}$/).withMessage('Please enter a valid phone number'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters').matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
