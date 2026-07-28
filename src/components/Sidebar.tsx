@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Compass, Zap, Bell, Plus, LogOut } from 'lucide-react';
+import { Home, Search, MessageCircle, Zap, Bell, Plus, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { icon: Home, label: 'Home', path: '/dashboard' },
+    { icon: MessageCircle, label: 'Messages', path: '/chat' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Zap, label: 'Wow', path: '/wow' },
     { icon: Bell, label: 'Notification', path: '/notifications' },
@@ -36,10 +37,10 @@ const Sidebar: React.FC = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-full text-left transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-full text-left transition-all duration-200 active:scale-95 ${
                 isActive
-                  ? 'bg-purple-600 text-white'
-                  : 'text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900'
+                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                  : 'text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/60 hover:translate-x-1'
               }`}
             >
               <Icon size={20} />

@@ -49,12 +49,13 @@ interface AuthContextType {
   userPosts: Post[];
   login: (emailOrPhone: string, password: string) => Promise<boolean>;
   signup: (userData: any) => Promise<boolean>;
+  googleLogin: (payload: any) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
   deletePost: (postId: string) => void;
   toggleSavePost: (postId: string) => void;
   updateUsername: (newUsername: string) => Promise<boolean>;
-  createPost: (postData: { type: 'text' | 'image' | 'video', content?: string, image?: string, video?: string }) => Promise<boolean>;
+  createPost: (postData: { type: 'text' | 'image' | 'video', content?: string, image?: string, video?: string, visibility?: 'public' | 'friends' }) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -144,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.messages || 'Login failed. Please try again.');
+        toast.error(data.message || data.messages || (data.errors && data.errors[0]?.msg) || 'Login failed. Please try again.');
         return false;
       }
 
@@ -185,12 +186,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data = await response.json();
       } catch (parseErr) {
         const text = await response.text().catch(() => null);
-        data = { messages: text || `HTTP ${response.status}` };
+        data = { message: text || `HTTP ${response.status}` };
       }
 
       if (!response.ok) {
         console.error('Signup failed', response.status, data);
-        toast.error(data.messages || 'Signup failed. Please try again.');
+        const errMsg = data?.message || data?.messages || (data?.errors && data.errors[0]?.msg) || 'Signup failed. Please try again.';
+        toast.error(errMsg);
         return false;
       }
 
@@ -205,6 +207,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error(error);
       toast.error('Signup failed. Please try again.');
+      return false;
+    }
+  };
+
+  const googleLogin = async (payload: any): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(typeof payload === 'string' ? { credential: payload } : payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || 'Google login failed.');
+        return false;
+      }
+
+      if (data.user?._id) {
+        data.user.id = data.user._id;
+      }
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+      setUserPosts(data.user.posts || []);
+      toast.success('Signed in with Google successfully!');
+      fetchUserPosts();
+      return true;
+    } catch (error) {
+      console.error('Google login error:', error);
+      toast.error('Google login failed. Please try again.');
       return false;
     }
   };
@@ -315,7 +351,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createPost = async (postData: { type: 'text' | 'image' | 'video', content?: string, image?: string, video?: string }): Promise<boolean> => {
+  const createPost = async (postData: { type: 'text' | 'image' | 'video', content?: string, image?: string, video?: string, visibility?: 'public' | 'friends' }): Promise<boolean> => {
     if (!user) return false;
     try {
       const token = localStorage.getItem('token');
@@ -341,6 +377,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       formData.append('type', postData.type);
+      formData.append('visibility', postData.visibility || 'public');
       if (postData.content) {
         formData.append('content', postData.content);
       }
@@ -395,6 +432,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       userPosts,
       login,
       signup,
+      googleLogin,
       logout,
       updateProfile,
       deletePost,

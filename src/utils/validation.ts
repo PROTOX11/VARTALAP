@@ -3,11 +3,13 @@ import * as yup from 'yup';
 export const loginSchema = yup.object({
   emailOrPhone: yup
     .string()
-    .required('Email or phone number is required')
-    .test('email-or-phone', 'Please enter a valid email or phone number', function(value) {
+    .required('Username, email, or phone is required')
+    .test('email-phone-or-username', 'Please enter a valid username, email, or phone number', function(value) {
+      if (!value) return false;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const phoneRegex = /^[+]?[\d\s\-\(\)]{10,}$/;
-      return emailRegex.test(value) || phoneRegex.test(value);
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;   // username: 3-20 alphanumeric/underscore
+      return emailRegex.test(value) || phoneRegex.test(value) || usernameRegex.test(value);
     }),
   password: yup
     .string()

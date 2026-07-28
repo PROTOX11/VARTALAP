@@ -66,6 +66,11 @@ const postSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  visibility: {
+    type: String,
+    enum: ['public', 'friends'],
+    default: 'public'
   }
 }, {
   timestamps: true

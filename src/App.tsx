@@ -4,6 +4,10 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
+import { CallProvider } from './contexts/CallContext';
+import { IncomingCallModal } from './components/call/IncomingCallModal';
+import { CallModal } from './components/call/CallModal';
+import ScrollToTopButton from './components/ScrollToTopButton';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -56,21 +60,27 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <SocketProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-              <Toaster
-                position="top-center"
-                toastOptions={{
-                  duration: 2000,
-                  style: {
-                    background: 'var(--toast-bg)',
-                    color: 'var(--toast-color)',
-                  },
-                }}
-              />
-              <AnimatedRoutes />
-            </div>
-          </Router>
+          <CallProvider>
+            <Router>
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+                <Toaster
+                  position="top-center"
+                  toastOptions={{
+                    duration: 2000,
+                    style: {
+                      background: 'var(--toast-bg)',
+                      color: 'var(--toast-color)',
+                    },
+                  }}
+                />
+                {/* Modals must be inside Router so they can access router context */}
+                <IncomingCallModal />
+                <CallModal />
+                <ScrollToTopButton />
+                <AnimatedRoutes />
+              </div>
+            </Router>
+          </CallProvider>
         </SocketProvider>
       </AuthProvider>
     </ThemeProvider>

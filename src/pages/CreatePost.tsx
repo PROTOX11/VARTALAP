@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Image, Type, Send } from 'lucide-react';
+import { ArrowLeft, Image, Type, Send, Globe, Users, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
-import { User } from 'lucide-react';
 
 const CreatePost: React.FC = () => {
   const navigate = useNavigate();
   const { user, createPost } = useAuth();
   const [postType, setPostType] = useState<'text' | 'image' | 'video'>('text');
+  const [visibility, setVisibility] = useState<'public' | 'friends'>('public');
   const [content, setContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
@@ -48,6 +48,7 @@ const CreatePost: React.FC = () => {
       content,
       image: selectedImage || undefined,
       video: selectedVideo || undefined,
+      visibility,
     });
     setIsUploading(false);
 
@@ -58,10 +59,10 @@ const CreatePost: React.FC = () => {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       
-      <div className="flex-1 p-6">
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto md:pl-40">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -93,11 +94,55 @@ const CreatePost: React.FC = () => {
               />
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">{user?.username}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Share something with your friends</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Share something with the world or your friends</p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Audience / Visibility Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  Who can see this post?
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('public')}
+                    className={`flex items-center space-x-3 p-3 rounded-xl border transition-all ${
+                      visibility === 'public'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-600 text-purple-600 dark:text-purple-300 font-semibold shadow-sm'
+                        : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${visibility === 'public' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'}`}>
+                      <Globe size={18} />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm">Public</div>
+                      <div className="text-[11px] opacity-75 font-normal">Visible to everyone</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('friends')}
+                    className={`flex items-center space-x-3 p-3 rounded-xl border transition-all ${
+                      visibility === 'friends'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 border-purple-600 text-purple-600 dark:text-purple-300 font-semibold shadow-sm'
+                        : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg ${visibility === 'friends' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'}`}>
+                      <Users size={18} />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm">Friends Only</div>
+                      <div className="text-[11px] opacity-75 font-normal">Connected friends only</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {/* Post Type Selection */}
               <div className="flex space-x-4">
                 <button

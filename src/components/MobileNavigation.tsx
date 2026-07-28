@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Compass, Zap, Bell, Plus, User } from 'lucide-react';
+import { Home, MessageCircle, Search, Zap, Bell, Plus, User } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MobileNavigation: React.FC = () => {
@@ -8,10 +8,11 @@ const MobileNavigation: React.FC = () => {
 
   const menuItems = [
     { icon: Home, label: 'Home', path: '/dashboard' },
+    { icon: MessageCircle, label: 'Chat', path: '/chat' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Plus, label: 'Create', path: '/create' },
     { icon: Zap, label: 'Wow', path: '/Wows' },
-    { icon: Bell, label: 'Notifications', path: '/notifications' },
+    { icon: Bell, label: 'Alerts', path: '/notifications' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 

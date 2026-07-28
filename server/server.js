@@ -38,101 +38,20 @@ const connectedUsers = new Map();
 app.set('io', io);
 app.set('connectedUsers', connectedUsers);
 
-io.on('connection', (socket) => {
+const initSocketManager = require('./socket/socketManager');
+initSocketManager(io, connectedUsers);
 
-  // User joins
-  socket.on('join', (userId) => {
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return socket.disconnect(); // Kick unauthenticated users
-    }
-    connectedUsers.set(userId, socket.id);
-    socket.userId = userId;
-    socket.broadcast.emit('userOnline', userId);
-  });
-
-  // Send message
-  socket.on('sendMessage', async ({ receiverId, message, chatId }) => {
-    try {
-      // Validate inputs
-      if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
-        return socket.emit('error', { message: 'Invalid chatId' });
-      }
-      if (!receiverId || !mongoose.Types.ObjectId.isValid(receiverId)) {
-        return socket.emit('error', { message: 'Invalid receiverId' });
-      }
-      if (!message || typeof message !== 'string' || !message.trim()) {
-        return socket.emit('error', { message: 'Message content is required' });
-      }
-      if (!socket.userId || !mongoose.Types.ObjectId.isValid(socket.userId)) {
-        return socket.emit('error', { message: 'Invalid sender' });
-      }
-
-      // Verify chat exists and user is a participant
-      const chat = await Chat.findById(chatId);
-      if (!chat || !chat.participants.includes(socket.userId)) {
-        return socket.emit('error', { message: 'Not authorized for this chat' });
-      }
-
-      const newMessage = await Message.create({
-        chatId,
-        sender: socket.userId,
-        receiver: receiverId,
-        content: message.trim(),
-      });
-
-      await Chat.findByIdAndUpdate(chatId, {
-        lastMessage: {
-          _id: newMessage._id,
-          content: newMessage.content,
-          sender: newMessage.sender,
-          createdAt: newMessage.createdAt,
-        },
-        updatedAt: new Date(),
-      });
-
-      const receiverSocketId = connectedUsers.get(receiverId);
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit('receiveMessage', {
-          sender: socket.userId,
-          message: newMessage,
-          chatId,
-        });
-      }
-
-      socket.emit('messageSent', newMessage);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      socket.emit('error', { message: `Failed to send message: ${error.message}` });
-    }
-  });
-
-  // Handle typing indicators
-  socket.on('typing', (data) => {
-    const { receiver, isTyping } = data;
-    const receiverSocketId = connectedUsers.get(receiver); // Fixed: Use receiver instead of receiverId
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('userTyping', {
-        senderId: socket.userId,
-        isTyping
-      });
-    }
-  });
-
-  // Handle disconnect
-  socket.on('disconnect', () => {
-    if (socket.userId) {
-      connectedUsers.delete(socket.userId);
-      socket.broadcast.emit('userOffline', socket.userId);
-    }
-  });
-});
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+  dns.setDefaultResultOrder('ipv4first');
+} catch (e) {}
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 10000,
 })
-  .then(() => console.log('MongoDB connected'))
+  .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Error handling middleware

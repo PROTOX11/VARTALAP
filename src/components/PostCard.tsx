@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share, MoreHorizontal, Bookmark, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share, MoreHorizontal, Bookmark, Trash2, Globe, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import axios from 'axios';
@@ -25,6 +25,7 @@ interface Post {
   isLiked?: boolean;
   isSaved?: boolean;
   isOwner?: boolean;
+  visibility?: 'public' | 'friends';
 }
 
 interface PostCardProps {
@@ -197,29 +198,45 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-4 md:mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/60 overflow-hidden mb-4 md:mb-6 transition-all duration-200 hover:shadow-md">
       <div className="p-3 md:p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <img
             src={post.user.profilePicture}
             alt={post.user.username}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover cursor-pointer"
-            onClick={handleProfileClick} // Add click handler
+            className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover cursor-pointer transition-transform duration-200 hover:scale-105"
+            onClick={handleProfileClick}
           />
           <div>
-            <h3 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white">
+            <h3 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white cursor-pointer hover:underline" onClick={handleProfileClick}>
               {post.user.username}
             </h3>
-            {post.user.location && (
-              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                {post.user.location}
-              </p>
-            )}
+            <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {post.user.location && (
+                <>
+                  <span>{post.user.location}</span>
+                  <span>•</span>
+                </>
+              )}
+              <span className="inline-flex items-center gap-1">
+                {post.visibility === 'friends' ? (
+                  <>
+                    <Users size={12} className="text-purple-500" />
+                    <span className="text-purple-600 dark:text-purple-400 font-medium">Friends Only</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe size={12} className="text-blue-500" />
+                    <span>Public</span>
+                  </>
+                )}
+              </span>
+            </div>
           </div>
         </div>
         <div className="relative">
           {showMenu && (
-            <div className="absolute right-0 top-8 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-2 z-10 min-w-[120px]">
+            <div className="absolute right-0 top-8 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-600 py-2 z-10 min-w-[120px] animate-pop-in">
               {post.isOwner && (
                 <button
                   onClick={handleDelete}
@@ -235,14 +252,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
       </div>
       {typeof post.content === 'string' && post.content && (
         <div className="px-3 md:px-4 pb-3">
-          <p className="text-sm md:text-base text-gray-900 dark:text-white">{post.content}</p>
+          <p className="text-sm md:text-base text-gray-900 dark:text-white leading-relaxed">{post.content}</p>
         </div>
       )}
       {typeof post.image === 'string' && post.image && (
         <img
           src={post.image}
           alt="Post content"
-          className="w-full h-64 md:h-96 object-cover"
+          className="w-full h-64 md:h-96 object-cover transition-opacity duration-300 hover:opacity-95"
         />
       )}
       {typeof post.video === 'string' && post.video && (
@@ -250,17 +267,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, onDelete, onSave }) => {
           <CustomVideoPlayer src={post.video} />
         </div>
       )}
-      <div className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-3 md:p-4 border-t border-gray-100 dark:border-gray-700/60">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 md:space-x-6">
             <button
               onClick={handleLike}
-              className={`flex items-center space-x-2 ${
+              className={`flex items-center space-x-2 active:scale-90 transition-all duration-150 ${
                 liked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
-              } hover:text-red-500 transition-colors`}
+              } hover:text-red-500`}
             >
-              <Heart size={20} fill={liked ? 'currentColor' : 'none'} />
-              <span className="text-sm md:text-base">{likesCount}</span>
+              <Heart size={20} fill={liked ? 'currentColor' : 'none'} className={liked ? 'animate-pop-in' : ''} />
+              <span className="text-sm md:text-base font-medium">{likesCount}</span>
             </button>
           </div>
           <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">

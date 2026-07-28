@@ -43,13 +43,14 @@ const getNotifications = async (req, res) => {
             .populate('post', 'image')
             .sort({ createdAt: -1 });
 
-        // Format to match your frontend interface
+        // Format to match frontend interface — include senderId for follow actions
         const formatted = notifications.map(n => ({
             _id: n._id,
             type: n.type,
+            senderId: n.sender?._id?.toString() || null,   // ← Used by follow/unfollow buttons
             user: {
-                username: n.sender.username,
-                profilePicture: n.sender.profilePicture
+                username: n.sender?.username || 'Unknown',
+                profilePicture: n.sender?.profilePicture || ''
             },
             content: n.content,
             createdAt: n.createdAt,

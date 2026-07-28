@@ -14,15 +14,16 @@ const generateToken = (userId) => {
 
 // Register User
 router.post('/register', [
-  body('username').isLength({ min: 3, max: 20 }).trim(),
-  body('email').isEmail().normalizeEmail(),
-  body('phone').isMobilePhone(),
-  body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+  body('username').isLength({ min: 3, max: 20 }).withMessage('Username must be 3-20 characters').trim(),
+  body('email').isEmail().withMessage('Please enter a valid email address').normalizeEmail(),
+  body('phone').optional({ checkFalsy: true }).matches(/^[+]?[\d\s\-\(\)]{7,}$/).withMessage('Please enter a valid phone number'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      const errorMsg = errors.array().map(e => e.msg).join(', ');
+      return res.status(400).json({ message: errorMsg, errors: errors.array() });
     }
 
     const { username, email, phone, password } = req.body;
@@ -66,8 +67,8 @@ router.post('/register', [
       user
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('REGISTER ROUTE ERROR:', error);
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 });
 router.post('/login', [
@@ -153,4 +154,125 @@ router.post('/logout', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+// Google Auth Endpoint
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+router.post('/google', async (req, res) => {
+  try {
+    const { credential, accessToken, email: bodyEmail, name: bodyName, picture: bodyPicture, googleId: bodyGoogleId } = req.body;
+    let email = bodyEmail;
+    let name = bodyName;
+    let picture = bodyPicture;
+    let googleId = bodyGoogleId;
+
+    if (credential) {
+      try {
+        const ticket = await googleClient.verifyIdToken({
+          idToken: credential,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        email = payload.email;
+        name = payload.name;
+        picture = payload.picture;
+        googleId = payload.sub;
+      } catch (verifyErr) {
+        console.warn('Google token verify notice:', verifyErr.message);
+        try {
+          const base64Url = credential.split('.')[1];
+          if (base64Url) {
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+            const payload = JSON.parse(jsonPayload);
+            email = payload.email || email;
+            name = payload.name || name;
+            picture = payload.picture || picture;
+            googleId = payload.sub || googleId;
+          }
+        } catch (e) {
+          console.error('Payload decode error:', e);
+        }
+      }
+    } else if (accessToken && (!email || !googleId)) {
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (userInfoRes.ok) {
+          const info = await userInfoRes.json();
+          email = info.email || email;
+          name = info.name || name;
+          picture = info.picture || picture;
+          googleId = info.sub || googleId;
+        }
+      } catch (infoErr) {
+        console.error('Failed to fetch Google UserInfo:', infoErr);
+      }
+    }
+
+    if (!email) {
+      return res.status(400).json({ message: 'Google authentication failed: Email required.' });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      let baseUsername = (name || email.split('@')[0])
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '')
+        .slice(0, 15);
+      if (baseUsername.length < 3) baseUsername = 'user_' + Math.floor(1000 + Math.random() * 9000);
+
+      let username = baseUsername;
+      let count = 1;
+      while (await User.findOne({ username })) {
+        username = `${baseUsername}_${count++}`;
+      }
+
+      const randomPassword = 'G_' + Math.random().toString(36).slice(-10) + 'A1!';
+
+      user = new User({
+        username,
+        email,
+        phone: '',
+        password: randomPassword,
+        googleId: googleId || '',
+        profilePicture: picture || 'https://res.cloudinary.com/dyjlmweqb/image/upload/v1752616422/icon-7797704_640_an798v.png'
+      });
+      await user.save();
+
+      const allUser = new AllUser({
+        userId: user._id,
+        username: user.username,
+        profilePicture: user.profilePicture,
+        about: user.about,
+        isOnline: true,
+        friends: user.friends,
+        coverPhoto: user.coverPhoto,
+        lastSeen: new Date(),
+        followers: user.followers,
+        following: user.following
+      });
+      await allUser.save();
+    } else {
+      user.isOnline = true;
+      if (googleId && !user.googleId) user.googleId = googleId;
+      if (picture && (!user.profilePicture || user.profilePicture.includes('icon-7797704'))) user.profilePicture = picture;
+      await user.save();
+    }
+
+    const token = generateToken(user._id);
+
+    return res.json({
+      message: 'Google login successful',
+      token,
+      user
+    });
+  } catch (error) {
+    console.error('GOOGLE AUTH ROUTE ERROR:', error);
+    return res.status(500).json({ message: 'Google login failed on server' });
+  }
+});
+
+module.exports = router;

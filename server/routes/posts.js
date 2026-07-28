@@ -14,7 +14,8 @@ router.post('/',
     auth,
     upload.single('media'),
     body('type').isIn(['text', 'image', 'Wow', 'video']),
-    body('content').optional().trim()
+    body('content').optional().trim(),
+    body('visibility').optional().isIn(['public', 'friends'])
   ],
   async (req, res) => {
   try {
@@ -23,13 +24,14 @@ router.post('/',
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { type, content, location } = req.body;
+    const { type, content, location, visibility } = req.body;
 
     const postData = {
       user: req.user._id,
       type,
       content,
       location,
+      visibility: ['public', 'friends'].includes(visibility) ? visibility : 'public',
     };
 
     // If a file was uploaded, stream it to Cloudinary from memory buffer
@@ -82,12 +84,22 @@ router.get('/feed', auth, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    const currentUserId = req.user._id;
+    const currentUserIdStr = currentUserId.toString();
     const userFriends = req.user.friends || [];
-    const userIds = [req.user._id, ...userFriends];
 
+    // Query rules:
+    // 1) Current user's own posts (public or friends)
+    // 2) Public posts from ANY user (whether connected/followed or not)
+    // 3) Friends-only posts from user's connected friends
     const posts = await Post.find({
-      user: { $in: userIds },
-      isActive: true
+      isActive: true,
+      $or: [
+        { user: currentUserId },
+        { visibility: 'public' },
+        { visibility: { $exists: false } },
+        { visibility: 'friends', user: { $in: userFriends } }
+      ]
     })
       .populate('user', 'username profilePicture')
       .populate('comments.user', 'username profilePicture')
@@ -96,10 +108,9 @@ router.get('/feed', auth, async (req, res) => {
       .limit(limit);
 
     // Build isLiked BEFORE toJSON() so Mongoose ObjectId methods are available
-    const currentUserId = req.user._id.toString();
     const postsWithIsLiked = posts.map(post => {
       const plain = post.toJSON();
-      plain.isLiked = post.likes.some(likeId => likeId.toString() === currentUserId);
+      plain.isLiked = post.likes.some(likeId => likeId.toString() === currentUserIdStr);
       return plain;
     });
 

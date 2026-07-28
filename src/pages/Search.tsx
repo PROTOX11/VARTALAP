@@ -3,6 +3,7 @@ import { Search as SearchIcon, Users, Hash, MapPin, MessageCircle } from 'lucide
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
+import FriendRequestButton from '../components/FriendRequestButton';
 import { User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -101,9 +102,9 @@ const Search: React.FC = () => {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div className="flex-1 p-6">
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-4xl mx-auto md:pl-60">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Search</h1>
@@ -175,20 +176,9 @@ const Search: React.FC = () => {
                             <p className="text-sm text-gray-400 dark:text-gray-500">Followers: {person.followers.length}</p>
                           </div>
                         </div>
-                        <button
-                          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                            isFollowing(person)
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                              : 'bg-purple-600 text-white hover:bg-purple-700'
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFollowToggle(person);
-                          }}
-                          disabled={!!(user && user.id === (person.userId || person._id))}
-                        >
-                          {isFollowing(person) ? 'Unfollow' : 'Follow'}
-                        </button>
+                        <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                          <FriendRequestButton targetUserId={person.userId || person._id} />
+                        </div>
                       </div>
                     ))
                 )}
