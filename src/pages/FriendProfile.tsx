@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import MobileNavigation from '../components/MobileNavigation';
 import Sidebar from '../components/Sidebar';
-import FriendRequestButton from '../components/FriendRequestButton';
+import FriendRequestButton, { RelationshipStatus } from '../components/FriendRequestButton';
 
 type FriendPost = any;
 type FriendUser = any;
@@ -20,6 +20,7 @@ const FriendProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
   const [selectedPostMedia, setSelectedPostMedia] = useState<FriendPost | null>(null);
+  const [relationship, setRelationship] = useState<RelationshipStatus>('none');
 
   useEffect(() => {
     const fetchFriendData = async () => {
@@ -164,16 +165,21 @@ const FriendProfile: React.FC = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 pt-2">
                 {!isSelf && friendData._id && (
-                  <FriendRequestButton targetUserId={friendData._id} />
+                  <FriendRequestButton
+                    targetUserId={friendData._id}
+                    onStatusChange={(status) => setRelationship(status)}
+                  />
                 )}
 
-                <button
-                  onClick={handleSendMessage}
-                  className="flex items-center space-x-2 px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-xl font-semibold text-sm transition-all shadow-sm active:scale-95"
-                >
-                  <MessageCircle size={18} />
-                  <span>Message</span>
-                </button>
+                {!isSelf && relationship === 'friends' && (
+                  <button
+                    onClick={handleSendMessage}
+                    className="flex items-center space-x-2 px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-xl font-semibold text-sm transition-all shadow-sm active:scale-95 animate-fadeIn"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Message</span>
+                  </button>
+                )}
               </div>
 
             </div>

@@ -17,10 +17,16 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
   className = '',
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(() => {});
+    }
+    if (audioRef.current && stream) {
+      audioRef.current.srcObject = stream;
+      audioRef.current.play().catch(() => {});
     }
   }, [stream]);
 
@@ -37,6 +43,9 @@ export const RemoteVideo: React.FC<RemoteVideoProps> = ({
           hasVideoTrack ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
         }`}
       />
+
+      {/* Hidden Dedicated Remote Audio Element */}
+      <audio ref={audioRef} autoPlay playsInline className="hidden" />
 
       {/* Fallback Audio Call / Avatar view */}
       {!hasVideoTrack && (

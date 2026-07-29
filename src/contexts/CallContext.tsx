@@ -150,29 +150,28 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    pc.onconnectionstatechange = () => {
-      switch (pc.connectionState) {
-        case 'connected':
-          setCallState('connected');
-          setConnectionQuality('excellent');
-          stopRingtone();
-          break;
-        case 'connecting':
-          setCallState('connecting');
-          break;
-        case 'disconnected':
-          setCallState('reconnecting');
-          setConnectionQuality('poor');
-          break;
-        case 'failed':
-          toast.error('Call connection failed');
-          setCallState('failed');
-          cleanupCall();
-          break;
-        case 'closed':
-          break;
+    const handleStateChange = () => {
+      const connState = pc.connectionState;
+      const iceState = pc.iceConnectionState;
+
+      if (connState === 'connected' || iceState === 'connected' || iceState === 'completed') {
+        setCallState('connected');
+        setConnectionQuality('excellent');
+        stopRingtone();
+      } else if (connState === 'connecting' || iceState === 'checking') {
+        setCallState((prev) => (prev === 'connected' ? 'connected' : 'connecting'));
+      } else if (connState === 'disconnected' || iceState === 'disconnected') {
+        setCallState('reconnecting');
+        setConnectionQuality('poor');
+      } else if (connState === 'failed' || iceState === 'failed') {
+        toast.error('Call connection failed');
+        setCallState('failed');
+        cleanupCall();
       }
     };
+
+    pc.onconnectionstatechange = handleStateChange;
+    pc.oniceconnectionstatechange = handleStateChange;
 
     peerConnectionRef.current = pc;
     return pc;
