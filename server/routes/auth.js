@@ -111,12 +111,29 @@ router.post('/login', [
     user.isOnline = true;
     await user.save();
 
+    // Sync mutual followers
+    const followingSet = new Set((user.following || []).map(id => id.toString()));
+    const mutualFollowUserIds = (user.followers || []).filter(id => followingSet.has(id.toString()));
+
+    if (mutualFollowUserIds.length > 0) {
+      await User.findByIdAndUpdate(user._id, { $addToSet: { friends: { $each: mutualFollowUserIds } } });
+      await AllUser.findOneAndUpdate({ userId: user._id }, { $addToSet: { friends: { $each: mutualFollowUserIds } } });
+      for (const friendId of mutualFollowUserIds) {
+        await User.findByIdAndUpdate(friendId, { $addToSet: { friends: user._id } });
+        await AllUser.findOneAndUpdate({ userId: friendId }, { $addToSet: { friends: user._id } });
+      }
+    }
+
+    const populatedUser = await User.findById(user._id)
+      .populate('friends', 'username profilePicture isOnline lastSeen about')
+      .populate('savedPosts');
+
     const token = generateToken(user._id);
 
     res.json({
       message: 'Login successful',
       token,
-      user
+      user: populatedUser || user
     });
 
   } catch (error) {
@@ -128,8 +145,23 @@ router.post('/login', [
 // Get Current User
 router.get('/me', auth, async (req, res) => {
   try {
+    const currentUser = await User.findById(req.user._id);
+    if (currentUser) {
+      const followingSet = new Set((currentUser.following || []).map(id => id.toString()));
+      const mutualFollowUserIds = (currentUser.followers || []).filter(id => followingSet.has(id.toString()));
+
+      if (mutualFollowUserIds.length > 0) {
+        await User.findByIdAndUpdate(req.user._id, { $addToSet: { friends: { $each: mutualFollowUserIds } } });
+        await AllUser.findOneAndUpdate({ userId: req.user._id }, { $addToSet: { friends: { $each: mutualFollowUserIds } } });
+        for (const friendId of mutualFollowUserIds) {
+          await User.findByIdAndUpdate(friendId, { $addToSet: { friends: req.user._id } });
+          await AllUser.findOneAndUpdate({ userId: friendId }, { $addToSet: { friends: req.user._id } });
+        }
+      }
+    }
+
     const user = await User.findById(req.user._id)
-      .populate('friends', 'username profilePicture isOnline lastSeen')
+      .populate('friends', 'username profilePicture isOnline lastSeen about')
       .populate('savedPosts');
 
     res.json(user);

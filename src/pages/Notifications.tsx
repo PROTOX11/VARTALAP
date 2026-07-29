@@ -329,14 +329,23 @@ const Notifications: React.FC = () => {
                               </div>
                             )}
 
-                            {/* ── FRIEND REQUEST notification → Accept / Delete (disappears when read/old) ── */}
+                            {/* ── FRIEND REQUEST notification → Accept / Delete or Message ── */}
                             {notification.type === 'friend_request' && sid && (
                               <div className="mt-2" onClick={e => e.stopPropagation()}>
-                                {frState === 'accepted' ? (
-                                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-semibold cursor-default pointer-events-none select-none">
-                                    <UserCheck size={12} />
-                                    You are now friends
-                                  </span>
+                                {frState === 'accepted' || notification.content.includes('accepted') ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-semibold cursor-default select-none">
+                                      <UserCheck size={12} />
+                                      You are now friends
+                                    </span>
+                                    <button
+                                      onClick={() => navigate(`/chat?user=${sid}`)}
+                                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-all active:scale-95"
+                                    >
+                                      <MessageCircle size={12} />
+                                      Message
+                                    </button>
+                                  </div>
                                 ) : frState === 'pending' && !notification.isRead ? (
                                   <div className="flex items-center gap-2">
                                     <button

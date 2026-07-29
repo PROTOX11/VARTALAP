@@ -31,6 +31,68 @@ export const Chat: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [friendsSearch, setFriendsSearch] = useState('');
+  const [friendsList, setFriendsList] = useState<any[]>([]);
+
+  // Fetch friends list from server on mount
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch(`${API_URL}/api/users/friends`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setFriendsList(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch friends for chat:', err);
+      }
+    };
+    fetchFriends();
+  }, [API_URL]);
+
+  // Sync with AuthContext user.friends if available
+  useEffect(() => {
+    if (user?.friends) {
+      const populated = user.friends.filter((f: any) => typeof f === 'object' && f !== null);
+      if (populated.length > 0) {
+        setFriendsList(populated);
+      }
+    }
+  }, [user?.friends]);
+
+  // Handle URL query parameter ?user=targetUserId
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const targetUserId = params.get('user');
+    if (targetUserId) {
+      const token = localStorage.getItem('token');
+      fetch(`${API_URL}/api/users/profile/${targetUserId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.user?._id) {
+            fetch(`${API_URL}/api/chat/create`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ participantId: data.user._id }),
+            })
+              .then(res => res.json())
+              .then(chat => {
+                setSelectedUser({ ...data.user, chatId: chat._id });
+              })
+              .catch(err => console.error('Error starting chat for query user:', err));
+          }
+        })
+        .catch(err => console.error('Error fetching target user profile:', err));
+    }
+  }, [location.search, API_URL]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -173,9 +235,10 @@ export const Chat: React.FC = () => {
       return acc;
     }, {});
 
-  const filteredFriends = user?.friends?.filter((f: any) =>
-    f.username?.toLowerCase().includes(friendsSearch.toLowerCase())
-  ) || [];
+  const activeFriends = friendsList.length > 0 ? friendsList : (user?.friends || []);
+  const filteredFriends = activeFriends.filter((f: any) =>
+    f && typeof f === 'object' && f.username?.toLowerCase().includes(friendsSearch.toLowerCase())
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden md:pl-64">

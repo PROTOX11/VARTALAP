@@ -21,6 +21,10 @@ router.post('/follow/:userId', auth, async (req, res) => {
       return res.status(400).json({ message: 'Cannot follow yourself' });
     }
 
+    // Check if targetUser already follows userId (making this a mutual follow)
+    const targetUser = await User.findById(targetUserId).select('following username profilePicture about isOnline lastSeen');
+    const isMutual = targetUser && targetUser.following && targetUser.following.some(id => id.toString() === userId.toString());
+
     // Update User collection
     await User.findByIdAndUpdate(userId, {
       $addToSet: { following: targetUserId }
@@ -37,6 +41,13 @@ router.post('/follow/:userId', auth, async (req, res) => {
       $addToSet: { followers: userId }
     });
 
+    if (isMutual) {
+      // Add each other to friends array
+      await User.findByIdAndUpdate(userId, { $addToSet: { friends: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $addToSet: { friends: userId } });
+      await AllUser.findOneAndUpdate({ userId }, { $addToSet: { friends: targetUserId } });
+      await AllUser.findOneAndUpdate({ userId: targetUserId }, { $addToSet: { friends: userId } });
+    }
 
     // Create and send notification
     const notification = await createFollowNotification(userId, targetUserId);
@@ -65,7 +76,7 @@ router.post('/follow/:userId', auth, async (req, res) => {
       }
     }
 
-    res.json({ message: 'Followed successfully' });
+    res.json({ message: 'Followed successfully', isMutual });
 
   } catch (error) {
     console.error(error);
@@ -85,18 +96,18 @@ router.post('/unfollow/:userId', auth, async (req, res) => {
 
     // Update User collection
     await User.findByIdAndUpdate(userId, {
-      $pull: { following: targetUserId }
+      $pull: { following: targetUserId, friends: targetUserId }
     });
     await User.findByIdAndUpdate(targetUserId, {
-      $pull: { followers: userId }
+      $pull: { followers: userId, friends: userId }
     });
 
     // Update AllUser collection
     await AllUser.findOneAndUpdate({ userId }, {
-      $pull: { following: targetUserId }
+      $pull: { following: targetUserId, friends: targetUserId }
     });
     await AllUser.findOneAndUpdate({ userId: targetUserId }, {
-      $pull: { followers: userId }
+      $pull: { followers: userId, friends: userId }
     });
 
 
@@ -520,8 +531,24 @@ router.get('/friend-request/sent', auth, async (req, res) => {
 // GET /api/users/friends
 router.get('/friends', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('friends', 'username profilePicture about isOnline lastSeen');
-    res.json(user.friends || []);
+    const currentUser = await User.findById(req.user._id);
+    if (currentUser) {
+      // Find mutual followers (users who follow me AND whom I follow)
+      const followingSet = new Set((currentUser.following || []).map(id => id.toString()));
+      const mutualFollowUserIds = (currentUser.followers || []).filter(id => followingSet.has(id.toString()));
+
+      if (mutualFollowUserIds.length > 0) {
+        await User.findByIdAndUpdate(req.user._id, { $addToSet: { friends: { $each: mutualFollowUserIds } } });
+        await AllUser.findOneAndUpdate({ userId: req.user._id }, { $addToSet: { friends: { $each: mutualFollowUserIds } } });
+        for (const friendId of mutualFollowUserIds) {
+          await User.findByIdAndUpdate(friendId, { $addToSet: { friends: req.user._id } });
+          await AllUser.findOneAndUpdate({ userId: friendId }, { $addToSet: { friends: req.user._id } });
+        }
+      }
+    }
+
+    const updatedUser = await User.findById(req.user._id).populate('friends', 'username profilePicture about isOnline lastSeen');
+    res.json(updatedUser?.friends || []);
   } catch (error) {
     console.error('Error fetching friends:', error);
     res.status(500).json({ message: 'Server error' });

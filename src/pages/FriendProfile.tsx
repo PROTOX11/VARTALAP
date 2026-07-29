@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, MessageCircle, UserPlus, UserCheck, Grid, Heart, MessageSquare, Calendar, Sparkles, Globe, Users, Play, Info } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Grid, Heart, MessageSquare, Calendar, Sparkles, Globe, Users, Play, Info } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
@@ -14,11 +14,10 @@ const FriendProfile: React.FC = () => {
   const API_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:6500`;
   const navigate = useNavigate();
   const { friendId } = useParams();
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const [friendData, setFriendData] = useState<FriendUser | null>(null);
   const [friendPosts, setFriendPosts] = useState<FriendPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'posts' | 'about'>('posts');
   const [selectedPostMedia, setSelectedPostMedia] = useState<FriendPost | null>(null);
 
@@ -38,7 +37,6 @@ const FriendProfile: React.FC = () => {
           const data = await res.json();
           setFriendData(data.user);
           setFriendPosts(data.posts || []);
-          setIsFollowing(user?.following?.includes(data.user._id) || data.user.followers?.includes(user?._id) || false);
         } else {
           setFriendData(null);
         }
@@ -51,47 +49,10 @@ const FriendProfile: React.FC = () => {
     };
 
     fetchFriendData();
-  }, [friendId, user?.following]);
+  }, [friendId, API_URL]);
 
   const handleSendMessage = () => {
     navigate(`/chat?user=${friendData?._id}`);
-  };
-
-  const handleFollowToggle = async () => {
-    if (!friendData?._id || !user?._id) return;
-
-    setIsFollowing(!isFollowing);
-
-    try {
-      const url = `${API_URL}/api/users/${isFollowing ? 'unfollow' : 'follow'}/${friendData._id}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-
-      if (res.ok) {
-        setFriendData((prev: FriendUser) => {
-          if (!prev) return null;
-          const newFollowers = isFollowing
-            ? prev.followers.filter((id: string) => id !== user._id)
-            : [...(prev.followers || []), user._id];
-          return { ...prev, followers: newFollowers };
-        });
-
-        setUser((prev: any) => {
-          if (!prev) return prev;
-          const newFollowing = isFollowing
-            ? prev.following.filter((id: string) => id !== friendData._id)
-            : [...(prev.following || []), friendData._id];
-          return { ...prev, following: newFollowing };
-        });
-      } else {
-        setIsFollowing(!isFollowing);
-      }
-    } catch (error) {
-      setIsFollowing(!isFollowing);
-      console.error('Failed to toggle follow:', error);
-    }
   };
 
   if (loading) {
@@ -203,21 +164,7 @@ const FriendProfile: React.FC = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 pt-2">
                 {!isSelf && friendData._id && (
-                  <>
-                    <FriendRequestButton targetUserId={friendData._id} />
-
-                    <button
-                      onClick={handleFollowToggle}
-                      className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md active:scale-95 ${
-                        isFollowing
-                          ? 'bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-700'
-                          : 'bg-gradient-to-r from-gray-700 to-gray-900 text-white hover:from-gray-800 hover:to-black'
-                      }`}
-                    >
-                      {isFollowing ? <UserCheck size={18} /> : <UserPlus size={18} />}
-                      <span>{isFollowing ? 'Following' : 'Follow'}</span>
-                    </button>
-                  </>
+                  <FriendRequestButton targetUserId={friendData._id} />
                 )}
 
                 <button

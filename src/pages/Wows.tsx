@@ -336,26 +336,45 @@ const Wows: React.FC = () => {
       </div>
 
       <div className="flex-1 relative overflow-hidden">
-        <div className="md:hidden absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-4 flex items-center justify-between gap-4">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-xl font-bold text-white">Wows</h1>
+        {/* Mobile Top Header */}
+        <div className="md:hidden absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/70 via-black/30 to-transparent p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-2 text-white hover:bg-white/20 rounded-full transition-colors active:scale-95"
+              title="Back to Feed"
+            >
+              <ArrowLeft size={24} />
+            </button>
+            <h1 className="text-xl font-bold text-white">Wows</h1>
+          </div>
           <ThemeToggle />
         </div>
 
-        <div className="hidden md:block absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-6">
+        {/* Desktop Top Header */}
+        <div className="hidden md:block absolute top-0 left-64 right-0 z-20 bg-gradient-to-b from-black/70 via-black/30 to-transparent p-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Wows</h1>
-            <button
-              onClick={() => navigate('/profile')}
-              className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
-            >
-              <User size={20} />
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 bg-white/20 text-white hover:bg-white/30 rounded-full transition-colors active:scale-95 backdrop-blur-md"
+                title="Back to Feed"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h1 className="text-2xl font-bold text-white">Wows</h1>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <ThemeToggle />
+              <button
+                onClick={() => navigate('/profile')}
+                className="p-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+                title="My Profile"
+              >
+                <User size={20} />
+              </button>
+            </div>
           </div>
         </div>
 
