@@ -33,6 +33,22 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/message', require('./routes/messages'));
 app.use('/api', notificationsRoutes);
 
+// Root and Health Check routes
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Vartalap Backend is running'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Socket.io connection handling
 const connectedUsers = new Map();
 app.set('io', io);
